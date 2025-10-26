@@ -13,6 +13,9 @@ class TrainingScene : public App::Scene
 		:
 	TrainingScene(const InitData& init) : IScene(init) {}
 private:
+	const Font font{ FontMethod::MSDF, 48 };
+
+
 	TrainingState m_state = TrainingState::CanInputFile;
 	int currentTurn = 0;
 	int maxTurn = 10;
@@ -21,13 +24,8 @@ private:
 	float timer = 0;
 	float maxTimer = 10;
 	void update() override;
-	void draw() const override
-	{
-		//基本設定
-		s3d::Scene::SetBackground(s3d::Palette::Black);
-		//中央にキャラクターを描画
-		//左にステータスを表示
-		//下にファイルを表示
-	}
+	void draw() const override;
+	void statusTable();
+	void eventTable();
 };
 

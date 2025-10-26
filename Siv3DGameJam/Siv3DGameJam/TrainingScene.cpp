@@ -12,17 +12,17 @@ void TrainingScene::update()
 		{
 			if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
 			{
-				Print << U"[File Drop]" << files.front().path;
 				droppedFile = files.front();
 			}
 		}
-		// ファイルが入力されたらステータス数値を変動させる
-		timer = 0;
-		maxTimer = 5;
-
+		m_state = TrainingState::Event;
 		break;
 	case TrainingState::Event:
-		// イベント発生中の状態
+		//ファイル入力が完了した状態
+		// ステータスの変動を行う
+		//　時間取得　s3D::Scene::DeltaTime()で取得可能
+		// s3d::lerp(開始値, 終了値, 進捗度);でステータスをアニメーションさせる
+		// イベント発生の状態
 		// 拡張子に応じて、イベントの発生をテーブルから処理
 		break;
 	case TrainingState::EndTraining:
@@ -35,4 +35,46 @@ void TrainingScene::update()
 	default:
 		break;
 	}
+}
+void TrainingScene::draw() const
+{
+	const s3d::Vec2 barPos{ 100, 200 };
+	const double barMaxWidth = 400.0;
+	const double barHeight = 30.0;
+	const double padding = 3.0; // 内側のバーとの余白
+	//基本設定
+	s3d::Scene::SetBackground(s3d::Palette::Gray);
+	//中央にキャラクターを描画
+	// 左上に残ターン数を表示
+	s3d::RectF currentTurnOuterRect{ s3d::Vec2{20,20}, 190, 130};
+	currentTurnOuterRect.draw(s3d::Palette::White);
+	s3d::RectF currentTurnInnerRect{ s3d::Vec2{21,21}, 188, 128 };
+	currentTurnInnerRect.draw(s3d::Palette::Black);
+	//中身の文字描画
+	font(U"決戦まで...").draw(24, Vec2{30, 40}, ColorF{1.0});
+	font(U"XXターン").draw(40, Vec2{ 30, 60 }, ColorF{ 1.0 });
+	//左にステータスを表示
+	//s3d::RectF outerRect{ barPos, barMaxWidth, barHeight };
+	//outerRect.draw(s3d::Palette::Darkgray); // 背景を濃い灰色で描画
+
+	//ステータス１
+	font(U"ステータス1").draw(24, Vec2{ 20, 190 }, ColorF{ 1.0 });
+
+	for (int i = 0; i < 6; i++)
+	{
+		s3d::RectF barBackRect{ s3d::Vec2{20,220 + i * 40}, 190,20};
+		barBackRect.draw(s3d::Palette::Darkgray);
+		s3d::RectF barInnerRect{ s3d::Vec2{20,220 + i * 40}, 140,20 };
+		barInnerRect.draw(s3d::Palette::Blue);
+	}
+	//下にファイルを表示
+}
+
+void TrainingScene::statusTable()
+{
+
+}
+void TrainingScene::eventTable()
+{
+
 }

@@ -25,8 +25,12 @@ void Main()
 	app.add<TrainingScene>(U"Training");
 	app.init(U"Title");
 
+	const Font font{ FontMethod::MSDF, 48 };
 
 	while (s3d::System::Update()) {
 		app.update();
+		const Point cursorPos = Cursor::Pos();
+
+		font(U"{}"_fmt(cursorPos)).draw(40, Vec2{ 40, 40 }, ColorF{ 0.1 });
 	}
 }
