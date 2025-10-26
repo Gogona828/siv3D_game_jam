@@ -52,7 +52,7 @@ void TrainingScene::draw() const
 	currentTurnInnerRect.draw(s3d::Palette::Black);
 	//中身の文字描画
 	font(U"決戦まで...").draw(24, Vec2{30, 40}, ColorF{1.0});
-	font(U"XXターン").draw(40, Vec2{ 30, 60 }, ColorF{ 1.0 });
+	font(U"{}ターン"_fmt(maxTurn - currentTurn)).draw(40, Vec2{ 30, 60 }, ColorF{ 1.0 });
 	//左にステータスを表示
 	//s3d::RectF outerRect{ barPos, barMaxWidth, barHeight };
 	//outerRect.draw(s3d::Palette::Darkgray); // 背景を濃い灰色で描画
