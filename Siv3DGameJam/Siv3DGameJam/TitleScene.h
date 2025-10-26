@@ -10,7 +10,7 @@ public:
 	void update() override
 	{
 		if (s3d::SimpleGUI::Button(U"ゲーム開始", { 300, 300 })) {
-			changeScene(U"Game"); // 公式の changeScene
+			changeScene(U"Training"); // 公式の changeScene
 		}
 	}
 
