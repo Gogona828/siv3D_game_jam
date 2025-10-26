@@ -1,9 +1,6 @@
 ﻿#pragma once
 class GameData
 {
-private:
-	GameData() = default;
-
 public:
 	static GameData& getInstance()
 	{
@@ -28,7 +25,11 @@ public:
 	{
 		// ゲームデータの初期化処理
 		//Print << U"[デバッグ]GameDataのリセットを実行";
+		characterStatus = { 0,0,0,0,0,0 };
 	}
+private:
+	GameData() = default;
+	CharacterStatus characterStatus;
 		
 };
 
