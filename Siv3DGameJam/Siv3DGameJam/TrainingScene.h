@@ -16,7 +16,10 @@ private:
 	TrainingState m_state = TrainingState::CanInputFile;
 	int currentTurn = 0;
 	int maxTurn = 10;
+	DroppedFilePath droppedFile;
 
+	float timer = 0;
+	float maxTimer = 10;
 	void update() override;
 	void draw() const override
 	{

@@ -8,7 +8,18 @@ void TrainingScene::update()
 	{
 	case TrainingState::CanInputFile:
 		// ファイル入力ができる状態
+		if (DragDrop::HasNewFilePaths())
+		{
+			if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
+			{
+				Print << U"[File Drop]" << files.front().path;
+				droppedFile = files.front();
+			}
+		}
 		// ファイルが入力されたらステータス数値を変動させる
+		timer = 0;
+		maxTimer = 5;
+
 		break;
 	case TrainingState::Event:
 		// イベント発生中の状態

@@ -1,6 +1,7 @@
 ﻿#pragma once
 # include <Siv3D.hpp>
 using App = s3d::SceneManager<s3d::String, void>;
+# include "GameData.h"
 
 class TitleScene : public App::Scene
 {
@@ -10,6 +11,7 @@ public:
 	void update() override
 	{
 		if (s3d::SimpleGUI::Button(U"ゲーム開始", { 300, 300 })) {
+			GameData::getInstance().reset(); // ゲームデータのリセット
 			changeScene(U"Training"); // 公式の changeScene
 		}
 	}

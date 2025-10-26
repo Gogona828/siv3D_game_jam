@@ -7,10 +7,12 @@ using App = s3d::SceneManager<s3d::String, void>;
 class TitleScene;
 class GameScene;
 class TrainingScene;
+class GameData;
 
 # include "TitleScene.h"
 # include "GameScene.h"
 # include "TrainingScene.h"
+# include "GameData.h"
 
 void Main()
 {
@@ -22,6 +24,7 @@ void Main()
 	app.add<GameScene>(U"Game");
 	app.add<TrainingScene>(U"Training");
 	app.init(U"Title");
+
 
 	while (s3d::System::Update()) {
 		app.update();
