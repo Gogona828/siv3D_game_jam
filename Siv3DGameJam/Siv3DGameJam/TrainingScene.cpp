@@ -13,9 +13,12 @@ void TrainingScene::update()
 			if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
 			{
 				droppedFile = files.front();
+				fileExtension = FileSystem::Extension(droppedFile.path);
+				hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
+
+				m_state = TrainingState::Event;
 			}
 		}
-		m_state = TrainingState::Event;
 		break;
 	case TrainingState::Event:
 		//ファイル入力が完了した状態
@@ -34,6 +37,11 @@ void TrainingScene::update()
 		break;
 	default:
 		break;
+	}
+
+	for (auto i : step(m_bars.size()))
+	{
+		m_bars[i].update(-0.2);
 	}
 }
 void TrainingScene::draw() const
@@ -60,12 +68,9 @@ void TrainingScene::draw() const
 	//ステータス１
 	font(U"ステータス1").draw(24, Vec2{ 20, 190 }, ColorF{ 1.0 });
 
-	for (int i = 0; i < 6; i++)
+	for (auto i : step(m_bars.size()))
 	{
-		s3d::RectF barBackRect{ s3d::Vec2{20,220 + i * 40}, 190,20};
-		barBackRect.draw(s3d::Palette::Darkgray);
-		s3d::RectF barInnerRect{ s3d::Vec2{20,220 + i * 40}, 140,20 };
-		barInnerRect.draw(s3d::Palette::Blue);
+		m_bars[i].draw();
 	}
 	//下にファイルを表示
 }
