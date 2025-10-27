@@ -16,6 +16,7 @@ class GameData;
 
 void Main()
 {
+	Window::Resize(896, 504);
 	s3d::FontAsset::Register(U"Title", 40);
 	s3d::FontAsset::Register(U"Game", 40);
 
