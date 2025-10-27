@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "TrainingScene.h"
+#include "GameData.h"
 # include <Siv3D.hpp>
 using App = s3d::SceneManager<s3d::String, void>;
 void TrainingScene::update()
@@ -39,10 +40,13 @@ void TrainingScene::update()
 		break;
 	}
 
-	for (auto i : step(m_bars.size()))
-	{
-		m_bars[i].update(-0.2);
-	}
+	m_bars[0].update(GameData::getInstance().characterStatus.Reliability / 100);
+	m_bars[1].update(GameData::getInstance().characterStatus.Availability / 100);
+	m_bars[2].update(GameData::getInstance().characterStatus.Serviceability / 100);
+	m_bars[3].update(GameData::getInstance().characterStatus.Integrity / 100);
+	m_bars[4].update(GameData::getInstance().characterStatus.Security / 100);
+
+	overloadBar.update(GameData::getInstance().characterStatus.Overload / 100);
 }
 void TrainingScene::draw() const
 {
@@ -72,6 +76,7 @@ void TrainingScene::draw() const
 	{
 		m_bars[i].draw();
 	}
+	overloadBar.draw();
 	//下にファイルを表示
 }
 

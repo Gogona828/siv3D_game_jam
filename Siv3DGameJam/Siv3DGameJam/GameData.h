@@ -19,7 +19,7 @@ public:
 	};
 
 	//データ
-
+	CharacterStatus characterStatus;
 	//データリセット
 	void reset()
 	{
@@ -29,7 +29,5 @@ public:
 	}
 private:
 	GameData() = default;
-	CharacterStatus characterStatus;
-		
 };
 
