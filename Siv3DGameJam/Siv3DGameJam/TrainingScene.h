@@ -14,72 +14,116 @@ public:
 		: m_rect{ pos, width, height } {
 	}
 
-	void update(double value)
+	void update()
 	{
-		m_value = Clamp(value, -1.0, 1.0);
+		if(!m_animating)
+			return;
+		m_timer += s3d::Scene::DeltaTime();
+		double t = Clamp(m_timer / 0.5, 0.0, 1.0);  // 0.5秒でアニメーション完了
+		m_value = Math::Lerp(m_startValue, m_targetValue, t);
+
+		if (t >= 1.0)
+		{
+			m_animating = false;
+		}
 	}
 
 	void draw() const
 	{
-		// 中央を軸にスケールさせたい
 		const Vec2 center = m_rect.center();
+		const double halfW = m_rect.w * 0.5;
 
-		if (m_value < 0)  // 左側（負）
+		if (m_value < 0)
 		{
-			double rate = Clamp(-m_value, 0.0, 1.0);  // 絶対値でスケール率
-			RectF filled = m_rect.stretched(-1).scaledAt(center, rate, 1.0);
+			// 左向き（赤）
+			const double rate = Clamp(-m_value, 0.0, 1.0);
+			const double w = halfW * rate;
 
-			// 左に寄せる：中心から左方向へ描画されるように座標を補正
-			filled.x = center.x - filled.w;
-
+			// 中心から左に伸ばす
+			RectF filled(center.x - w, m_rect.y, w, m_rect.h);
 			filled.draw(Palette::Red);
 		}
-		else  // 右側（正）
+		else
 		{
-			double rate = Clamp(m_value, 0.0, 1.0);
-			RectF filled = m_rect.stretched(-1).scaledAt(center, rate, 1.0);
+			// 右向き（青）
+			const double rate = Clamp(m_value, 0.0, 1.0);
+			const double w = halfW * rate;
+
+			// 中心から右に伸ばす
+			RectF filled(center.x, m_rect.y, w, m_rect.h);
 			filled.draw(Palette::Skyblue);
 		}
 
 		// 枠線
 		m_rect.drawFrame(2, Palette::White);
-		s3d::RectF centerLine{ center.x - 1, m_rect.y, 2, m_rect.h };
-		centerLine.draw(Palette::White);
+	}
+	void setTarget(double value)
+	{
+		m_startValue = m_value;
+		m_targetValue = Clamp(value, -1.0, 1.0);
+		m_timer = 0.0;
+		m_animating = true;
 	}
 
 private:
 	RectF m_rect;
 	double m_value = 0;
+	double m_startValue = 0;
+	double m_targetValue = 0;
+	double m_timer = 0.0;
+	bool m_animating = false;
 };
 
 class StatusBar
 {
-
 public:
 	StatusBar(Vec2 pos, double width, double height)
 		: m_rect{ pos, width, height } {
 	}
 
-	void update(double value)
+	void update()
 	{
-		m_value = Clamp(value, -1.0, 1.0);
+		if (!m_animating)
+			return;
+		m_timer += s3d::Scene::DeltaTime();
+		double t = Clamp(m_timer / 0.5, 0.0, 1.0);  // 0.5秒でアニメーション完了
+		m_value = Math::Lerp(m_startValue, m_targetValue, t);
+
+		if (t >= 1.0)
+		{
+			m_animating = false;
+		}
 	}
 
 	void draw() const
 	{
-		// 中央を軸にスケールさせたい
-		const Vec2 center = m_rect.center();
-		double rate = Clamp(m_value, 0.0, 1.0);
-		RectF filled = m_rect.stretched(-1).scaledAt(center, rate, 1.0);
+		const double halfW = m_rect.w * 0.5;
+		// 右向き（青）
+		const double rate = Clamp(m_value, 0.0, 1.0);
+		const double w = halfW * rate;
+
+		// 中心から右に伸ばす
+		RectF filled(m_rect.x, m_rect.y, w, m_rect.h);
 		filled.draw(Palette::Skyblue);
 
 		// 枠線
 		m_rect.drawFrame(2, Palette::White);
 	}
+	void setTarget(double value)
+	{
+		m_startValue = m_value;
+		m_targetValue = Clamp(value, -1.0, 1.0);
+		m_timer = 0.0;
+		m_animating = true;
+	}
 
 private:
 	RectF m_rect;
 	double m_value = 0;
+	double m_startValue = 0;
+	double m_targetValue = 0;
+	double m_timer = 0.0;
+	bool m_animating = false;
 };
 
 

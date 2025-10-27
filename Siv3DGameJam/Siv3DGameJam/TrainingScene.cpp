@@ -5,6 +5,15 @@
 using App = s3d::SceneManager<s3d::String, void>;
 void TrainingScene::update()
 {
+	if (!initialized)
+	{
+		m_bars[0].setTarget(1);
+		m_bars[1].setTarget(-1);
+		m_bars[2].setTarget(0.7);
+		m_bars[3].setTarget(-0.5);
+		overloadBar.setTarget(1);
+		initialized = true;
+	}
 	switch (m_state)
 	{
 	case TrainingState::CanInputFile:
@@ -17,6 +26,7 @@ void TrainingScene::update()
 				fileExtension = FileSystem::Extension(droppedFile.path);
 				hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
 
+				//TODO:重複チェック
 				m_state = TrainingState::Event;
 			}
 		}
@@ -24,8 +34,13 @@ void TrainingScene::update()
 	case TrainingState::Event:
 		//ファイル入力が完了した状態
 		// ステータスの変動を行う
-		//　時間取得　s3D::Scene::DeltaTime()で取得可能
-		// s3d::lerp(開始値, 終了値, 進捗度);でステータスをアニメーションさせる
+		m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / 100);
+		m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / 100);
+		m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / 100);
+		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / 100);
+		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / 100);
+
+		//overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / 100);
 		// イベント発生の状態
 		// 拡張子に応じて、イベントの発生をテーブルから処理
 		break;
@@ -40,13 +55,13 @@ void TrainingScene::update()
 		break;
 	}
 
-	m_bars[0].update(GameData::getInstance().characterStatus.Reliability / 100);
-	m_bars[1].update(GameData::getInstance().characterStatus.Availability / 100);
-	m_bars[2].update(GameData::getInstance().characterStatus.Serviceability / 100);
-	m_bars[3].update(GameData::getInstance().characterStatus.Integrity / 100);
-	m_bars[4].update(GameData::getInstance().characterStatus.Security / 100);
+	m_bars[0].update();
+	m_bars[1].update();
+	m_bars[2].update();
+	m_bars[3].update();
+	m_bars[4].update();
 
-	overloadBar.update(GameData::getInstance().characterStatus.Overload / 100);
+	overloadBar.update();
 }
 void TrainingScene::draw() const
 {
