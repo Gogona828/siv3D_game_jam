@@ -23,12 +23,8 @@ TitleScene::TitleScene(const InitData& init)
 	// ボタンの描画倍率（0.5 = 半分サイズ）
 	m_buttonScale = 0.5;
 
-	if (!m_bgMusic.isEmpty())
-	{
-		m_bgMusic.setVolume(0.1); // 50%音量
-		m_bgMusic.setLoop(true);  // ループ再生
-		m_bgMusic.play();
-	}
+    // BGM再生（AudioManager 経由）
+    AudioManager::Get().playBGM(m_bgMusic);
 }
 
 void TitleScene::update()
@@ -49,7 +45,7 @@ void TitleScene::update()
 			double now = Scene::Time();
 			if (now - m_lastClickTimeStart < doubleClickInterval)
 			{
-				m_decideSE.playOneShot();
+				AudioManager::Get().playSE(m_decideSE);
 				m_fadeTimer.restart();
 				m_transitioning = true;
 			}
@@ -81,9 +77,16 @@ void TitleScene::update()
 
 	if (m_transitioning && m_fadeTimer.sF() > 1.0)
 	{
-		m_bgMusic.stop();          // 遷移前に止める
+		AudioManager::Get().stopBGM();
 		changeScene(U"Training"); // ← App::Scene から継承されている
 	}
+
+	m_bgmSlider.update();
+	m_seSlider.update();
+
+	// スライダーの値をAudioManagerに反映
+	AudioManager::Get().setBGMVolume(m_bgmSlider.value());
+	AudioManager::Get().setSEVolume(m_seSlider.value());
 }
 
 void TitleScene::draw() const
@@ -106,6 +109,10 @@ void TitleScene::draw() const
 	{
 		m_hoverFrame.resized(m_hoverFrame.size() * m_buttonScale).draw(m_howToPos);
 	}
+
+	// スライダー描画
+	m_bgmSlider.draw();
+	m_seSlider.draw();
 
 	if (m_transitioning)
 	{
