@@ -5,12 +5,21 @@ enum class TrainingState
 {
 	CanInputFile,
 	Event,
+	AfterEvent,
 	EndTraining
 };
 struct SystemStatusAddData
 {
 	int addId = -1;
 	int addValue = 0;
+};
+enum class EventType
+{
+	Attack,
+	Heal,
+	Buff,
+	Debuff,
+	None
 };
 class BranchStatusBar
 {
@@ -166,12 +175,16 @@ private:
 
 	bool initialized = false;
 
+	//アニメーション用タイマー
 	float timer = 0;
 	float maxTimer = 10;
+	float cutinTimer;
+	float cutinMaxTimer = 1;
 
 	void update() override;
 	void draw() const override;
 	Array<SystemStatusAddData> statusTable();
-	Array<SystemStatusAddData> eventTable();
+	EventType eventTypeTable();
+	Array<int> eventIdTable(EventType type,int n);
 	void ChangeStatus(Array<SystemStatusAddData> data);
 };

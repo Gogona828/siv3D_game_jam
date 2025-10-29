@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <Siv3D.hpp>
 class GameData
 {
 public:
@@ -20,6 +21,7 @@ public:
 
 	//データ
 	CharacterStatus characterStatus;
+	Array<String> eventList;
 	//データリセット
 	void reset()
 	{

@@ -1,6 +1,7 @@
 ﻿# pragma once
 # include <Siv3D.hpp>
 # include "GameData.h"
+# include "MasterData.h"
 # include "VolumeSlider.h"
 # include "AudioManager.h"
 

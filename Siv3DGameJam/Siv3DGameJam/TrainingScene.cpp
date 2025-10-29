@@ -44,10 +44,21 @@ void TrainingScene::update()
 		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / 100.0);
 		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / 100.0);
 		Print << (GameData::getInstance().characterStatus.Security / 100.0);
-
 		overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / 100.0);
-		// イベント発生の状態
-		// 拡張子に応じて、イベントの発生をテーブルから処理
+		m_state = TrainingState::AfterEvent;
+		break;
+	case TrainingState::AfterEvent:
+		//カットイン処理
+		timer += s3d::Scene::DeltaTime();
+		if (timer <= maxTimer)break;
+		timer = 0;
+
+		//イベント種類の抽選
+		EventType nowEventType = eventTypeTable();
+		//イベント確率の処理
+		Array<int> eventIdArray = eventIdTable(nowEventType, 1);
+		//IDからイベント内容を実行、付与する
+
 		m_state = TrainingState::EndTraining;
 		break;
 	case TrainingState::EndTraining:
@@ -152,13 +163,92 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 	}
 	return statusAddData;
 }
-Array<SystemStatusAddData> TrainingScene::eventTable()
+EventType TrainingScene::eventTypeTable()
 {
-	//仮実装。ただイベントの規格が違うので修正予定
-	Array<SystemStatusAddData> statusAddData;
-	return statusAddData;
-}
+	EventType eventType;
 
+	int probability = Random(1, 100);
+	//拡張子に応じたイベント確率の調整
+	if (fileExtension == U"png")
+	{
+		probability = 100; //必ずイベント発生
+	}
+
+	//イベントがそもそも発生するかの判定
+	if (probability <= 40)
+	{
+		eventType = EventType::None;
+	}
+	else
+	{
+		//発生する場合、イベントの種類を決定
+		//現状は等しく起きうる
+		int eventProb = Random(1,4);
+		if (eventProb == 1)
+		{
+			eventType = EventType::Attack;
+		}
+		else if (eventProb == 2)
+		{
+			eventType = EventType::Heal;
+		}
+		else if (eventProb == 3)
+		{
+			eventType = EventType::Buff;
+		}
+		else
+		{
+			eventType = EventType::Debuff;
+		}
+	}
+
+	return eventType;
+}
+Array<int> TrainingScene::eventIdTable(EventType type,int n)
+{
+	Array<int> eventData;
+	for(int i = 0; i < n; i++)
+	{
+		int rnd = Random(1, 100);
+		switch (type)
+		{
+		case EventType::Attack:
+			if (rnd < 40)
+			{
+				break;
+			}
+			if (rnd < 50)
+			{
+				eventData.push_back(1);
+			}
+			else if(rnd < 80)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 96)
+			{
+				eventData.push_back(2);
+			}
+
+			break;
+		case EventType::Heal:
+			break;
+		case EventType::Buff:
+			break;
+		case EventType::Debuff:
+			break;
+
+
+
+		case EventType::None:
+			break;
+		default:
+			break;
+		}
+	}
+
+	return eventData;
+}
 void TrainingScene::ChangeStatus(Array<SystemStatusAddData> data)
 {
 	for (auto& datas : data)
