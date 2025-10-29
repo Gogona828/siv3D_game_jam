@@ -34,6 +34,17 @@ void TrainingScene::update()
 		break;
 	case TrainingState::Event:
 		//もし重複ファイルが入力されていたら弾く
+		if(filePathList.contains(droppedFile.path))
+		{
+			//弾く処理
+			m_state = TrainingState::CanInputFile;
+			break;
+		}
+		else
+		{
+			//重複していなければリストに追加
+			filePathList.push_back(droppedFile.path);
+		}
 		//ファイル入力が完了した状態
 		statusAddData = statusTable();
 		ChangeStatus(statusAddData);
@@ -48,6 +59,7 @@ void TrainingScene::update()
 		m_state = TrainingState::AfterEvent;
 		break;
 	case TrainingState::AfterEvent:
+	{
 		//カットイン処理
 		timer += s3d::Scene::DeltaTime();
 		if (timer <= maxTimer)break;
@@ -57,10 +69,10 @@ void TrainingScene::update()
 		EventType nowEventType = eventTypeTable();
 		//イベント確率の処理
 		Array<int> eventIdArray = eventIdTable(nowEventType, 1);
-		//IDからイベント内容を実行、付与する
-
+		GameData::getInstance().eventList.append(eventIdArray);
 		m_state = TrainingState::EndTraining;
 		break;
+	}
 	case TrainingState::EndTraining:
 		//	トレーニング終了後の状態
 		//	ターンを加算する

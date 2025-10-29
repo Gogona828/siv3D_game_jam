@@ -21,7 +21,7 @@ public:
 
 	//データ
 	CharacterStatus characterStatus;
-	Array<String> eventList;
+	Array<int> eventList;
 	//データリセット
 	void reset()
 	{
