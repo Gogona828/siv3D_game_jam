@@ -61,9 +61,9 @@ void TrainingScene::update()
 	case TrainingState::AfterEvent:
 	{
 		//カットイン処理
-		timer += s3d::Scene::DeltaTime();
-		if (timer <= maxTimer)break;
-		timer = 0;
+		cutinTimer += s3d::Scene::DeltaTime();
+		if (cutinTimer <= cutinMaxTimer)break;
+		cutinTimer = 0;
 
 		//イベント種類の抽選
 		EventType nowEventType = eventTypeTable();
