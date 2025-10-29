@@ -1,19 +1,16 @@
 ﻿#include "stdafx.h"
 #include "TrainingScene.h"
 #include "GameData.h"
+#include "MasterData.h"
 # include <Siv3D.hpp>
 using App = s3d::SceneManager<s3d::String, void>;
 void TrainingScene::update()
 {
-	//if (!initialized)
-	//{
-	//	m_bars[0].setTarget(1);
-	//	m_bars[1].setTarget(-1);
-	//	m_bars[2].setTarget(0.7);
-	//	m_bars[3].setTarget(-0.5);
-	//	overloadBar.setTarget(1);
-	//	initialized = true;
-	//}
+	if (!initialized)
+	{
+		GameData::getInstance().reset();
+		initialized = true;
+	}
 	switch (m_state)
 	{
 	case TrainingState::CanInputFile:
@@ -49,13 +46,12 @@ void TrainingScene::update()
 		statusAddData = statusTable();
 		ChangeStatus(statusAddData);
 		// ステータスの変動を行う
-		m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / 100.0);
-		m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / 100.0);
-		m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / 100.0);
-		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / 100.0);
-		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / 100.0);
-		Print << (GameData::getInstance().characterStatus.Security / 100.0);
-		overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / 100.0);
+		m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability		/ MasterData::maxStatusValue());
+		m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability	/ MasterData::maxStatusValue());
+		m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability	/ MasterData::maxStatusValue());
+		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity		/ MasterData::maxStatusValue());
+		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security		/ MasterData::maxStatusValue());
+		overloadBar.setTarget(GameData::getInstance().characterStatus.Overload		/ MasterData::maxStatusValue());
 		m_state = TrainingState::AfterEvent;
 		break;
 	case TrainingState::AfterEvent:
@@ -78,13 +74,36 @@ void TrainingScene::update()
 		//	ターンを加算する
 		currentTurn++;
 		//	終了後、ターン数が最大に達していなければ次のターンへ
-		if (currentTurn - maxTurn < 0|| GameData::getInstance().characterStatus.Overload >= 100)
+		if (maxTurn - currentTurn > 0 && GameData::getInstance().characterStatus.Overload <= 100)
 		{
 			m_state = TrainingState::CanInputFile;
-			if (currentTurn % 3 == 0)
+			if (currentTurn == 3 && !evoluted)
 			{
-				//TODO:キャラクター変更処理
-				//SetCharacter(U"");
+				SetCharacter(U"assets/maingame/chara_image/evolution_normal.png");
+			}
+			if (!evoluted)
+			{
+				for (int i = 0; i < GameData::getInstance().characterStatus.toArray().size(); i++)
+				{
+					if (GameData::getInstance().characterStatus.toArray()[i] / MasterData::maxStatusValue() >= 0.7)
+					{
+						SetCharacter(MasterData::getTexturePath(i + 1));
+						evoluted = true;
+						break;
+					}
+				}
+			}
+			int count = 0;
+			for (int i = 0; i < GameData::getInstance().characterStatus.toArray().size(); i++)
+			{
+				if (GameData::getInstance().characterStatus.toArray()[i] < 0)
+				{
+					count++;
+				}
+			}
+			if(count >=3)
+			{
+				SetCharacter(U"assets/maingame/chara_image/bug_normal.png");
 			}
 		}
 		else
@@ -137,26 +156,36 @@ void TrainingScene::draw() const
 	}
 	overloadBar.draw();
 	//下にファイルを表示
+
+	//debug
 }
 
 Array<SystemStatusAddData> TrainingScene::statusTable()
 {
 	Array<SystemStatusAddData> statusAddData;
+	//ステータスの変動基本値を決定する
+	//現状は「ハッシュの3,5,2桁目の和を10で割った余り×1GBをマックスとした容量倍率（１～３倍）」で決定
+	int digit =( (hash / 100) % 10) + (((hash / 10000) % 10) + (hash / 10) % 10) % 16;
+	float sizeInGB = size / (1024 * 1024 * 1024);
+	float mul = Math::Lerp(1.0, 3.0, sizeInGB);
+	int param = static_cast<int>(digit * mul * 1.3);
+	//さらに各ステータスRandom 0-5の範囲で変動を加える
+	//ステータス変動は「変動基本値 + Random（０－５の範囲）を加算」「（変動基本値/3）＋ Random(0-5)を減算」「容量(GB) + Random(0-10)を加算（Zipを除く）」の３つ
 	//拡張子に応じたステータス変動の先行抽選
 	if(fileExtension == U"txt")
 	{
 		SystemStatusAddData upStatusData;
 		upStatusData.addId = static_cast<int>(StatusId::Intergrity);
-		upStatusData.addValue = Random(1,10);
+		upStatusData.addValue = param + Random(0, 5);
 		statusAddData.push_back(upStatusData);
 		SystemStatusAddData downStatusData;
 		downStatusData.addId = static_cast<int>(StatusId::Security);
-		downStatusData.addValue = Random(1, 10) * -1;
+		downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1;
 		statusAddData.push_back(downStatusData);
 
 		SystemStatusAddData overloadStatusData;
 		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = Random(5, 15);
+		overloadStatusData.addValue = (size / (1024 * 1024 * 1024) + Random(0,10));
 		statusAddData.push_back(overloadStatusData);
 
 	}
@@ -164,20 +193,25 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 	{
 		SystemStatusAddData overloadStatusData;
 		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = Random(5, 15) * -1;
+		overloadStatusData.addValue = (size / (1024 * 1024 * 1024) + Random(3, 10)) * -1;
 		statusAddData.push_back(overloadStatusData);
 	}
 	else
 	{
 		//該当がない場合はランダムでステータス変動
 		SystemStatusAddData upStatusData;
-		upStatusData.addId = Random(0,5);
-		upStatusData.addValue = Random(1, 10);
+		upStatusData.addId = Random(0,4);
+		upStatusData.addValue = param + Random(0, 5);
 		statusAddData.push_back(upStatusData);
 		SystemStatusAddData downStatusData;
-		downStatusData.addId = Random(0, 5);
-		downStatusData.addValue = Random(1, 10);
+		downStatusData.addId = Random(0, 4);
+		downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1;
 		statusAddData.push_back(downStatusData);
+
+		SystemStatusAddData overloadStatusData;
+		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
+		overloadStatusData.addValue = Math::Abs(size / (1024 * 1024 * 1024) + Random(3, 18));
+		statusAddData.push_back(overloadStatusData);
 	}
 	return statusAddData;
 }
@@ -274,22 +308,40 @@ void TrainingScene::ChangeStatus(Array<SystemStatusAddData> data)
 		switch (static_cast<StatusId>(datas.addId))
 		{
 		case StatusId::Reliability:
-			GameData::getInstance().characterStatus.Reliability += datas.addValue;
+			GameData::getInstance().characterStatus.Reliability += static_cast<int>(
+				Math::Clamp(static_cast<float>(datas.addValue),
+					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Reliability,
+					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Reliability));
 			break;
 		case StatusId::Availability:
-			GameData::getInstance().characterStatus.Availability += datas.addValue;
+			GameData::getInstance().characterStatus.Availability += static_cast<int>(
+				Math::Clamp(static_cast<float>(datas.addValue),
+					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Availability,
+					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Availability));
 			break;
 		case StatusId::Serviceability:
-			GameData::getInstance().characterStatus.Serviceability += datas.addValue;
+			GameData::getInstance().characterStatus.Serviceability += static_cast<int>(
+				Math::Clamp(static_cast<float>(datas.addValue),
+					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Serviceability,
+					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Serviceability));
 			break;
 		case StatusId::Intergrity:
-			GameData::getInstance().characterStatus.Integrity += datas.addValue;
+			GameData::getInstance().characterStatus.Integrity += static_cast<int>(
+				Math::Clamp(static_cast<float>(datas.addValue),
+					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Integrity,
+					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Integrity));
 			break;
 		case StatusId::Security:
-			GameData::getInstance().characterStatus.Security += datas.addValue;
+			GameData::getInstance().characterStatus.Security += static_cast<int>(
+				Math::Clamp(static_cast<float>(datas.addValue),
+					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Security,
+					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Security));
 			break;
 		case StatusId::Overload:
-			GameData::getInstance().characterStatus.Overload += datas.addValue;
+			GameData::getInstance().characterStatus.Overload += static_cast<int>(
+				Math::Clamp(static_cast<float>(datas.addValue),
+					GameData::getInstance().characterStatus.Overload * -1,
+					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Overload));
 			break;
 		default:
 			break;
@@ -300,4 +352,5 @@ void TrainingScene::SetCharacter(String path)
 {
 	//キャラクター画像の設定
 	characterImagePath = path;
+	characterTexture = Texture(characterImagePath);
 }

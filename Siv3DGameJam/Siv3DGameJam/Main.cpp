@@ -32,6 +32,6 @@ void Main()
 		app.update();
 		const Point cursorPos = Cursor::Pos();
 
-		font(U"{}"_fmt(cursorPos)).draw(40, Vec2{ 40, 40 }, ColorF{ 0.1 });
+		//font(U"{}"_fmt(cursorPos)).draw(40, Vec2{ 40, 40 }, ColorF{ 0.1 });
 	}
 }

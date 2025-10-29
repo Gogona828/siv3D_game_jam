@@ -17,6 +17,19 @@ public:
 		int Security;		// 安全性
 
 		int Overload;
+
+		Array<int> toArray() const
+		{
+			return Array<int>
+			{
+				Reliability,
+				Availability,
+				Serviceability,
+				Integrity,
+				Security,
+				Overload
+			};
+		}
 	};
 
 	//データ
@@ -27,7 +40,15 @@ public:
 	{
 		// ゲームデータの初期化処理
 		//Print << U"[デバッグ]GameDataのリセットを実行";
-		characterStatus = { 0,0,0,0,0,50 };
+		characterStatus.Reliability = 0;
+		characterStatus.Availability = 0;	// 可用性
+		characterStatus.Serviceability = 0;	// 保守性
+		characterStatus.Integrity = 0;		// 保全性
+		characterStatus.Security = 0;		// 安全性
+
+		characterStatus.Overload = 0;
+
+		eventList.clear();
 	}
 private:
 	GameData() = default;

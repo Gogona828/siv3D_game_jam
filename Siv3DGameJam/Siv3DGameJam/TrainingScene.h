@@ -150,9 +150,11 @@ class TrainingScene : public App::Scene
 	TrainingScene(const InitData& init) : IScene(init) {}
 private:
 	const Font font{ FontMethod::MSDF, 48 };
-	String characterImagePath = U"assets/maingame/chara_image/404_normal.png";
+	String characterImagePath = U"assets/maingame/chara_image/origin_normal.png";
 	Texture characterTexture = s3d::Texture(characterImagePath);
 	TrainingState m_state = TrainingState::CanInputFile;
+	bool evoluted = false;
+
 	int currentTurn = 0;
 	int maxTurn = 10;
 
