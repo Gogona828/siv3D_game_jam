@@ -81,6 +81,11 @@ void TrainingScene::update()
 		if (currentTurn - maxTurn < 0|| GameData::getInstance().characterStatus.Overload >= 100)
 		{
 			m_state = TrainingState::CanInputFile;
+			if (currentTurn % 3 == 0)
+			{
+				//TODO:キャラクター変更処理
+				//SetCharacter(U"");
+			}
 		}
 		else
 		{
@@ -110,6 +115,7 @@ void TrainingScene::draw() const
 	//基本設定
 	s3d::Scene::SetBackground(s3d::Palette::Gray);
 	//中央にキャラクターを描画
+	characterTexture.resized(200, 200).draw(s3d::Vec2{ 400, 100 });
 	// 左上に残ターン数を表示
 	s3d::RectF currentTurnOuterRect{ s3d::Vec2{20,20}, 190, 130};
 	currentTurnOuterRect.draw(s3d::Palette::White);
@@ -289,4 +295,9 @@ void TrainingScene::ChangeStatus(Array<SystemStatusAddData> data)
 			break;
 		}
 	}
+}
+void TrainingScene::SetCharacter(String path)
+{
+	//キャラクター画像の設定
+	characterImagePath = path;
 }
