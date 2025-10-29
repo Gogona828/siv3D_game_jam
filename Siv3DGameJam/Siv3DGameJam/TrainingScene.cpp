@@ -5,15 +5,15 @@
 using App = s3d::SceneManager<s3d::String, void>;
 void TrainingScene::update()
 {
-	if (!initialized)
-	{
-		m_bars[0].setTarget(1);
-		m_bars[1].setTarget(-1);
-		m_bars[2].setTarget(0.7);
-		m_bars[3].setTarget(-0.5);
-		overloadBar.setTarget(1);
-		initialized = true;
-	}
+	//if (!initialized)
+	//{
+	//	m_bars[0].setTarget(1);
+	//	m_bars[1].setTarget(-1);
+	//	m_bars[2].setTarget(0.7);
+	//	m_bars[3].setTarget(-0.5);
+	//	overloadBar.setTarget(1);
+	//	initialized = true;
+	//}
 	switch (m_state)
 	{
 	case TrainingState::CanInputFile:
@@ -25,6 +25,7 @@ void TrainingScene::update()
 				droppedFile = files.front();
 				fileExtension = FileSystem::Extension(droppedFile.path);
 				hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
+				size = FileSystem::FileSize(droppedFile.path);
 
 				//TODO:重複チェック
 				m_state = TrainingState::Event;
@@ -32,24 +33,38 @@ void TrainingScene::update()
 		}
 		break;
 	case TrainingState::Event:
+		//もし重複ファイルが入力されていたら弾く
 		//ファイル入力が完了した状態
+		statusAddData = statusTable();
+		ChangeStatus(statusAddData);
 		// ステータスの変動を行う
-		m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / 100);
-		m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / 100);
-		m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / 100);
-		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / 100);
-		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / 100);
+		m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / 100.0);
+		m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / 100.0);
+		m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / 100.0);
+		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / 100.0);
+		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / 100.0);
+		Print << (GameData::getInstance().characterStatus.Security / 100.0);
 
-		//overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / 100);
+		overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / 100.0);
 		// イベント発生の状態
 		// 拡張子に応じて、イベントの発生をテーブルから処理
+		m_state = TrainingState::EndTraining;
 		break;
 	case TrainingState::EndTraining:
 		//	トレーニング終了後の状態
-		//	ターンを加算アニメーションする
+		//	ターンを加算する
+		currentTurn++;
 		//	終了後、ターン数が最大に達していなければ次のターンへ
-		//	最大に達していればバトルへ移行
-		//　パラメータの容量がマックスでもバトルへ移行する
+		if (currentTurn - maxTurn < 0|| GameData::getInstance().characterStatus.Overload >= 100)
+		{
+			m_state = TrainingState::CanInputFile;
+		}
+		else
+		{
+			//TODO:バトルシーンへ移行
+			//現在はタイトルへ戻してるだけ
+			changeScene(U"Title");
+		}
 		break;
 	default:
 		break;
@@ -95,11 +110,81 @@ void TrainingScene::draw() const
 	//下にファイルを表示
 }
 
-void TrainingScene::statusTable()
+Array<SystemStatusAddData> TrainingScene::statusTable()
 {
+	Array<SystemStatusAddData> statusAddData;
+	//拡張子に応じたステータス変動の先行抽選
+	if(fileExtension == U"txt")
+	{
+		SystemStatusAddData upStatusData;
+		upStatusData.addId = static_cast<int>(StatusId::Intergrity);
+		upStatusData.addValue = Random(1,10);
+		statusAddData.push_back(upStatusData);
+		SystemStatusAddData downStatusData;
+		downStatusData.addId = static_cast<int>(StatusId::Security);
+		downStatusData.addValue = Random(1, 10) * -1;
+		statusAddData.push_back(downStatusData);
 
+		SystemStatusAddData overloadStatusData;
+		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
+		overloadStatusData.addValue = Random(5, 15);
+		statusAddData.push_back(overloadStatusData);
+
+	}
+	else if (fileExtension == U"Zip")
+	{
+		SystemStatusAddData overloadStatusData;
+		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
+		overloadStatusData.addValue = Random(5, 15) * -1;
+		statusAddData.push_back(overloadStatusData);
+	}
+	else
+	{
+		//該当がない場合はランダムでステータス変動
+		SystemStatusAddData upStatusData;
+		upStatusData.addId = Random(0,5);
+		upStatusData.addValue = Random(1, 10);
+		statusAddData.push_back(upStatusData);
+		SystemStatusAddData downStatusData;
+		downStatusData.addId = Random(0, 5);
+		downStatusData.addValue = Random(1, 10);
+		statusAddData.push_back(downStatusData);
+	}
+	return statusAddData;
 }
-void TrainingScene::eventTable()
+Array<SystemStatusAddData> TrainingScene::eventTable()
 {
+	//仮実装。ただイベントの規格が違うので修正予定
+	Array<SystemStatusAddData> statusAddData;
+	return statusAddData;
+}
 
+void TrainingScene::ChangeStatus(Array<SystemStatusAddData> data)
+{
+	for (auto& datas : data)
+	{
+		switch (static_cast<StatusId>(datas.addId))
+		{
+		case StatusId::Reliability:
+			GameData::getInstance().characterStatus.Reliability += datas.addValue;
+			break;
+		case StatusId::Availability:
+			GameData::getInstance().characterStatus.Availability += datas.addValue;
+			break;
+		case StatusId::Serviceability:
+			GameData::getInstance().characterStatus.Serviceability += datas.addValue;
+			break;
+		case StatusId::Intergrity:
+			GameData::getInstance().characterStatus.Integrity += datas.addValue;
+			break;
+		case StatusId::Security:
+			GameData::getInstance().characterStatus.Security += datas.addValue;
+			break;
+		case StatusId::Overload:
+			GameData::getInstance().characterStatus.Overload += datas.addValue;
+			break;
+		default:
+			break;
+		}
+	}
 }

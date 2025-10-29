@@ -7,6 +7,11 @@ enum class TrainingState
 	Event,
 	EndTraining
 };
+struct SystemStatusAddData
+{
+	int addId = -1;
+	int addValue = 0;
+};
 class BranchStatusBar
 {
 public:
@@ -97,7 +102,7 @@ public:
 
 	void draw() const
 	{
-		const double halfW = m_rect.w * 0.5;
+		const double halfW = m_rect.w;
 		// 右向き（青）
 		const double rate = Clamp(m_value, 0.0, 1.0);
 		const double w = halfW * rate;
@@ -112,7 +117,7 @@ public:
 	void setTarget(double value)
 	{
 		m_startValue = m_value;
-		m_targetValue = Clamp(value, -1.0, 1.0);
+		m_targetValue = Clamp(value, 0.0, 1.0);
 		m_timer = 0.0;
 		m_animating = true;
 	}
@@ -142,10 +147,13 @@ private:
 	int currentTurn = 0;
 	int maxTurn = 10;
 
+	//入力されたファイルデータ
 	DroppedFilePath droppedFile;
 	Array<FilePath> filePathList;//すでに入力されたパスリスト
 	String fileExtension;//拡張子格納用
+	int size = 0;//ファイルサイズ格納用
 	uint64 hash;//ハッシュ値格納用
+	Array<SystemStatusAddData> statusAddData;
 
 	Array<BranchStatusBar> m_bars = {
 			{ Vec2{ 20, 220 }, 200, 20 },
@@ -163,6 +171,7 @@ private:
 
 	void update() override;
 	void draw() const override;
-	void statusTable();
-	void eventTable();
+	Array<SystemStatusAddData> statusTable();
+	Array<SystemStatusAddData> eventTable();
+	void ChangeStatus(Array<SystemStatusAddData> data);
 };
