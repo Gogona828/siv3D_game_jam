@@ -178,7 +178,7 @@ private:
 	//アニメーション用タイマー
 	float timer = 0;
 	float maxTimer = 10;
-	float cutinTimer;
+	float cutinTimer = 0;
 	float cutinMaxTimer = 1;
 
 	void update() override;
