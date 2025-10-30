@@ -1,6 +1,6 @@
 ﻿#pragma once
 # include <Siv3D.hpp>
-using App = s3d::SceneManager<s3d::String, void>;
+#include "Common.h" 
 
 class GameScene : public App::Scene
 {

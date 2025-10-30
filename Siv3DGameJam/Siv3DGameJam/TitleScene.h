@@ -1,12 +1,12 @@
 ﻿# pragma once
 # include <Siv3D.hpp>
+#include "Common.h" 
 # include "GameData.h"
 # include "MasterData.h"
 # include "VolumeSlider.h"
 # include "AudioManager.h"
+#include "ClickEffect.h"
 
-// main.cpp の型エイリアス App を使う
-using App = s3d::SceneManager<s3d::String, void>;
 
 class TitleScene : public App::Scene
 {
@@ -32,8 +32,10 @@ private:
 	bool m_transitioning = false;
 	s3d::Stopwatch m_fadeTimer{ s3d::StartImmediately::No };
 
-	VolumeSlider m_bgmSlider{ s3d::Vec2(725, 420), 150, 10,U"BGM", 0.5 };
+	VolumeSlider m_bgmSlider{ s3d::Vec2(725, 420), 150, 10,U"BGM", 0.1 };
 	VolumeSlider m_seSlider{ s3d::Vec2(725, 460), 150, 10, U"SE", 0.5 };
+
+	ClickEffect clickEffect;
 
 public:
 	TitleScene(const InitData& init);  // ← コンストラクタは InitData を受け取る

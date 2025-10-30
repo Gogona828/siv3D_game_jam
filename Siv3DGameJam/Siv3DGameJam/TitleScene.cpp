@@ -30,6 +30,9 @@ TitleScene::TitleScene(const InitData& init)
 void TitleScene::update()
 {
 	using namespace s3d;
+	if (MouseL.down())
+		clickEffect.spawn(Cursor::PosF());
+	clickEffect.update();
 
 	constexpr double doubleClickInterval = 0.3;
 
@@ -92,7 +95,6 @@ void TitleScene::update()
 void TitleScene::draw() const
 {
 	using namespace s3d;
-
 	m_background.resized(Scene::Size()).draw();
 	m_logo.resized(400).drawAt(Scene::CenterF().x, 150);
 
@@ -119,4 +121,5 @@ void TitleScene::draw() const
 		const double t = m_fadeTimer.sF();
 		RectF(Scene::Size()).draw(ColorF{ 0.0, Min(t, 1.0) });
 	}
+	clickEffect.draw();    // クリックエフェクト描画
 }

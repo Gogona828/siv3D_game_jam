@@ -165,6 +165,9 @@
     <ClCompile Include="MasterData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ResultScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\icon.ico">
@@ -846,6 +849,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MasterData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RankColor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ClickEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
