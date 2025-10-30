@@ -164,7 +164,7 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 {
 	Array<SystemStatusAddData> statusAddData;
 	//ステータスの変動基本値を決定する
-	//現状は「ハッシュの3,5,2桁目の和を10で割った余り×1GBをマックスとした容量倍率（１～３倍）」で決定
+	//現状は「ハッシュの3,5,2桁目の和を16で割った余り×1GBをマックスとした容量倍率（１～３倍）」で決定
 	int digit =( (hash / 100) % 10) + (((hash / 10000) % 10) + (hash / 10) % 10) % 16;
 	float sizeInGB = size / (1024 * 1024 * 1024);
 	float mul = Math::Lerp(1.0, 3.0, sizeInGB);
@@ -214,6 +214,12 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 		statusAddData.push_back(overloadStatusData);
 	}
 	return statusAddData;
+
+
+	//切り出し要件
+	//ステータス抽選に確率適応
+	//各ステータスに変動倍率を適応
+	//それらをJsonで拡張しやすいようにする
 }
 EventType TrainingScene::eventTypeTable()
 {
