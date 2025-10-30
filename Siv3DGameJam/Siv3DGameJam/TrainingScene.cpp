@@ -3,7 +3,7 @@
 #include "GameData.h"
 #include "MasterData.h"
 # include <Siv3D.hpp>
-using App = s3d::SceneManager<s3d::String, void>;
+#include "Common.h" 
 void TrainingScene::update()
 {
 	if (!initialized)
