@@ -20,6 +20,11 @@ private:
 	BehaviorInfoView cpBehaviorInfoView;
 	BossCharacterView cpBossCharacterView;
 
+	Image glitchImage;
+	Texture glitchTexture;
+
+	Vec2 uvOffset{ 0, 0 }; // UVスクロール用
+
 public:
 	enum class State
 	{
