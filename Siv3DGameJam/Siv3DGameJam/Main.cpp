@@ -13,17 +13,20 @@ class GameData;
 # include "GameScene.h"
 # include "TrainingScene.h"
 # include "GameData.h"
+# include "BattleScene.h"
 
 void Main()
 {
 	Window::Resize(896, 504);
 	s3d::FontAsset::Register(U"Title", 40);
 	s3d::FontAsset::Register(U"Game", 40);
+	s3d::FontAsset::Register(U"Battle", 40);
 
 	App app;
 	app.add<TitleScene>(U"Title");
 	app.add<GameScene>(U"Game");
 	app.add<TrainingScene>(U"Training");
+	app.add<BattleScene>(U"Battle");
 	app.init(U"Title");
 
 	const Font font{ FontMethod::MSDF, 48 };

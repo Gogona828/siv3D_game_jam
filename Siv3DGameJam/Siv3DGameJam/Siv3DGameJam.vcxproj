@@ -117,10 +117,15 @@
   <ItemGroup>
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="AudioManager.h" />
+    <ClCompile Include="BattleScene.cpp" />
+    <ClCompile Include="BehaviorInfoView.cpp" />
+    <ClCompile Include="BossCharacterView.cpp" />
+    <ClCompile Include="DropZone.cpp" />
     <ClCompile Include="GameData.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MasterData.cpp" />
+    <ClCompile Include="PlayerCharacterView.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -332,9 +337,14 @@
     <Xml Include="App\example\xml\test.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BattleScene.h" />
+    <ClInclude Include="BehaviorInfoView.h" />
+    <ClInclude Include="BossCharacterView.h" />
+    <ClInclude Include="DropZone.h" />
     <ClInclude Include="GameData.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="MasterData.h" />
+    <ClInclude Include="PlayerCharacterView.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="TrainingScene.h" />

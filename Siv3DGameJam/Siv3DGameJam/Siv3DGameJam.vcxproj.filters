@@ -165,6 +165,21 @@
     <ClCompile Include="MasterData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BattleScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DropZone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerCharacterView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorInfoView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BossCharacterView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\icon.ico">
@@ -846,6 +861,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MasterData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BattleScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DropZone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerCharacterView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorInfoView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BossCharacterView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
