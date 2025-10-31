@@ -1,0 +1,6 @@
+[
+    {"UpStatusProbability":[1,2,3,4,5]},
+    {"DownStatusProbability":[1,2,3,4,5]},
+    {"FireEventProbability":[0]},
+    {"":[]}
+]
