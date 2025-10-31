@@ -201,6 +201,7 @@ private:
 	EventType nowEventType;
 	Texture eventTexture;
 	String eventText;
+	Texture eventBackGround;
 
 	void update() override;
 	void draw() const override;

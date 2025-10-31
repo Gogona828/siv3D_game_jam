@@ -15,6 +15,7 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_btn_howto = s3d::Texture(U"assets/maingame/training/btn_howto.png");;
 	m_btn_explorer = s3d::Texture(U"assets/maingame/training/btn_explorer.png");;
 	m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
+	eventBackGround = s3d::Texture(U"assets/maingame/event_image/event_bg.png");
 }
 
 void TrainingScene::update()
@@ -93,12 +94,16 @@ void TrainingScene::update()
 			switch (nowEventType)
 			{
 			case EventType::Attack:
+				SetEventData(U"assets/maingame/event_image/event_1.png", U"処理速度が向上した");
 				break;
 			case EventType::Heal:
+				SetEventData(U"assets/maingame/event_image/event_2.png", U"処理速度が向上した");//TODO:テキスト変更
 				break;
 			case EventType::Buff:
+				SetEventData(U"assets/maingame/event_image/event_3.png", U"処理速度が向上した");//TODO:テキスト変更
 				break;
 			case EventType::Debuff:
+				SetEventData(U"assets/maingame/event_image/event_4.png", U"処理速度が向上した");//TODO:テキスト変更
 				break;
 			default:
 				break;
@@ -107,6 +112,7 @@ void TrainingScene::update()
 		}
 		if (MouseL.down())
 		{
+			eventDrawing = false;
 			//クリックされたら次の状態へ
 			m_state = TrainingState::EndTraining;
 		}
@@ -209,14 +215,23 @@ void TrainingScene::draw() const
 	{
 		m_bars[i].draw();
 	}
-	overloadBar.draw();
+	overloadBar.draw();	
 	//下にファイルを表示
 	if (eventDrawing)
 	{
-		Rect(Scene::Rect()).draw(ColorF(0.0, 0.0, 0.0, 0.5));
+		eventBackGround.resized(896, 504).drawAt(Scene::CenterF());	//フェード背景
+
+		//イベント発生装飾バー
+		s3d::RectF leftbar{ s3d::Vec2{46,60}, 105, 2 };				
+		leftbar.draw(s3d::Palette::White);
+		font(U"イベント発生").draw(TextStyle::Outline(0.2,s3d::Palette::Yellow), 28, Vec2{ 160, 38 }, ColorF{ 1.0 });
+		s3d::RectF rightbar{ s3d::Vec2{339,60}, 105, 2 };
+		rightbar.draw(s3d::Palette::White);
+		
+		eventTexture.resized(580).drawAt(245, 200);
+
+		font(U"{}"_fmt(eventText)).draw(24, Vec2{ 44, 350 }, ColorF{ 1.0 });
 	}
-	//debug
-	Print << U"{}"_fmt(GameData::getInstance().characterStatus.Overload);
 }
 
 Array<SystemStatusAddData> TrainingScene::statusTable()
@@ -332,6 +347,7 @@ Array<int> TrainingScene::eventIdTable(EventType type,int n)
 		case EventType::Attack:
 			if (rnd < 40)
 			{
+				eventData.push_back(1);
 				break;
 			}
 			if (rnd < 50)
@@ -349,10 +365,61 @@ Array<int> TrainingScene::eventIdTable(EventType type,int n)
 
 			break;
 		case EventType::Heal:
+			if (rnd < 40)
+			{
+				eventData.push_back(1);
+				break;
+			}
+			if (rnd < 50)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 80)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 96)
+			{
+				eventData.push_back(2);
+			}
 			break;
 		case EventType::Buff:
+			if (rnd < 40)
+			{
+				eventData.push_back(1);
+				break;
+			}
+			if (rnd < 50)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 80)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 96)
+			{
+				eventData.push_back(2);
+			}
 			break;
 		case EventType::Debuff:
+			if (rnd < 40)
+			{
+				eventData.push_back(1);
+				break;
+			}
+			if (rnd < 50)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 80)
+			{
+				eventData.push_back(1);
+			}
+			else if (rnd < 96)
+			{
+				eventData.push_back(2);
+			}
 			break;
 
 
