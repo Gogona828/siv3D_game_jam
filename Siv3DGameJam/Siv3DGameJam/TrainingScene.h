@@ -1,6 +1,9 @@
 ﻿#pragma once
 # include <Siv3D.hpp>
-#include "Common.h" 
+#include "Common.h"
+#include "ClickEffect.h"
+# include "AudioManager.h"
+
 enum class TrainingState
 {
 	CanInputFile,
@@ -151,6 +154,8 @@ class TrainingScene : public App::Scene
 public:
 	TrainingScene(const InitData& init);
 private:
+	ClickEffect clickEffect;
+
 	s3d::Texture m_background;
 	s3d::Texture m_dropshadow;
 	s3d::Texture m_training_guide;
@@ -158,6 +163,18 @@ private:
 	s3d::Texture m_btn_howto;
 	s3d::Texture m_btn_explorer;
 	s3d::Texture m_btn_hover;
+	s3d::Texture m_btn_restart;
+
+	s3d::String m_hovered;
+	Vec2 m_explorerPos;
+	Vec2 m_howToPos;
+	Vec2 m_restartPos;
+	double m_buttonScale;  // ボタンの描画倍率
+	double m_lastClickTimeExplorer;
+	double m_lastClickTimeHowTo;
+	double m_lastClickTimeRestart;
+
+	s3d::Audio m_btnSE;
 
 	struct DropAnim
 	{
