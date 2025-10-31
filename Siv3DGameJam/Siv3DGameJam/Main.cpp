@@ -37,7 +37,6 @@ void Main()
 	while (s3d::System::Update()) {
 		app.update();
 		const Point cursorPos = Cursor::Pos();
-		Print << static_cast<int>(GameData::getInstance().evolutedCharacterTextureId);
 		//font(U"{}"_fmt(cursorPos)).draw(40, Vec2{ 40, 40 }, ColorF{ 0.1 });
 	}
 }
