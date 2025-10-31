@@ -69,17 +69,48 @@ void TrainingScene::update()
 		break;
 	case TrainingState::AfterEvent:
 	{
-		//カットイン処理
-		cutinTimer += s3d::Scene::DeltaTime();
-		if (cutinTimer <= cutinMaxTimer)break;
-		cutinTimer = 0;
+		if (!eventDrawing)
+		{
+			//イベント種類の抽選
+			nowEventType = eventTypeTable();
+			//イベント確率の処理
+			Array<int> eventIdArray = eventIdTable(nowEventType, 1);
+			GameData::getInstance().eventList.append(eventIdArray);
+			if(nowEventType == EventType::None)
+			{
+				//イベントなしの場合はそのまま終了へ
+				m_state = TrainingState::EndTraining;
+				break;
+			}
+			//カットイン処理
+			cutinFlag = true;
+			cutinTimer += s3d::Scene::DeltaTime();
+			if (cutinTimer <= cutinMaxTimer)break;
+			cutinTimer = 0;
+			cutinFlag = false;
 
-		//イベント種類の抽選
-		EventType nowEventType = eventTypeTable();
-		//イベント確率の処理
-		Array<int> eventIdArray = eventIdTable(nowEventType, 1);
-		GameData::getInstance().eventList.append(eventIdArray);
-		m_state = TrainingState::EndTraining;
+			//イベント画面の描画決定
+			switch (nowEventType)
+			{
+			case EventType::Attack:
+				break;
+			case EventType::Heal:
+				break;
+			case EventType::Buff:
+				break;
+			case EventType::Debuff:
+				break;
+			default:
+				break;
+			}
+			eventDrawing = true;
+		}
+		if (MouseL.down())
+		{
+			//クリックされたら次の状態へ
+			m_state = TrainingState::EndTraining;
+		}
+		
 		break;
 	}
 	case TrainingState::EndTraining:
@@ -180,8 +211,12 @@ void TrainingScene::draw() const
 	}
 	overloadBar.draw();
 	//下にファイルを表示
-
+	if (eventDrawing)
+	{
+		Rect(Scene::Rect()).draw(ColorF(0.0, 0.0, 0.0, 0.5));
+	}
 	//debug
+	Print << U"{}"_fmt(GameData::getInstance().characterStatus.Overload);
 }
 
 Array<SystemStatusAddData> TrainingScene::statusTable()
@@ -368,11 +403,16 @@ void TrainingScene::ChangeStatus(Array<SystemStatusAddData> data)
 					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Security));
 			break;
 		case StatusId::Overload:
+		{
+			float clampmin = GameData::getInstance().characterStatus.Overload * -1;
+			float clampmax = MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Overload;
+
 			GameData::getInstance().characterStatus.Overload += static_cast<int>(
 				Math::Clamp(static_cast<float>(datas.addValue),
 					GameData::getInstance().characterStatus.Overload * -1,
 					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Overload));
 			break;
+		}
 		default:
 			break;
 		}

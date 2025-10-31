@@ -21,6 +21,7 @@ enum class EventType
 	Debuff,
 	None
 };
+
 class BranchStatusBar
 {
 public:
@@ -67,7 +68,9 @@ public:
 			RectF filled(center.x, m_rect.y, w, m_rect.h);
 			filled.draw(Palette::Skyblue);
 		}
-
+		//中央分離帯
+		RectF filled(center.x - 1.0, m_rect.y - 3.0, 2, m_rect.h + 6.0);
+		filled.draw(Palette::White);
 		// 枠線
 		m_rect.drawFrame(2, Palette::White);
 	}
@@ -130,6 +133,7 @@ public:
 		m_startValue = m_value;
 		m_targetValue = Clamp(value, 0.0, 1.0);
 		m_timer = 0.0;
+		m_animating = true;
 	}
 
 private:
@@ -190,6 +194,13 @@ private:
 	float maxTimer = 10;
 	float cutinTimer = 0;
 	float cutinMaxTimer = 1;
+	bool cutinFlag = false;
+
+	//イベント描画用
+	bool eventDrawing = false;
+	EventType nowEventType;
+	Texture eventTexture;
+	String eventText;
 
 	void update() override;
 	void draw() const override;
@@ -198,6 +209,11 @@ private:
 	Array<int> eventIdTable(EventType type,int n);
 	void ChangeStatus(Array<SystemStatusAddData> data);
 	void SetCharacter(String path);
+	void SetEventData(String texturePath, String text)
+	{
+		eventTexture = Texture(texturePath);
+		eventText = text;
+	}
 
 	int32 characterTextureId = 0;
 };
