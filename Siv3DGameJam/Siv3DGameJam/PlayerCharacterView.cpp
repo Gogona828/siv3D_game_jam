@@ -47,7 +47,7 @@ void PlayerCharacterView::draw() const
 		const Transformer2D t1{ Mat3x2::Translate(breakOffset) };
 
 		RectF breakRect{ Arg::center(0, 0), 60, 60 };
-		breakRect.draw();
+		breakTexture.resized(Vec2{ 118, 150 } / 2).draw(Arg::center(breakRect.center()));
 		{
 			Transformer2D t2{ Mat3x2::Translate(breakRect.rightX(), breakRect.bottomY()) };
 			font(U"3").draw(TextStyle::Outline(0.5, ColorF{ 0 }), 40, Arg::center(0, 0));
