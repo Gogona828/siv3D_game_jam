@@ -1,6 +1,6 @@
 ﻿#pragma once
 # include <Siv3D.hpp>
-using App = s3d::SceneManager<s3d::String, void>;
+#include "Common.h" 
 enum class TrainingState
 {
 	CanInputFile,
@@ -86,6 +86,8 @@ private:
 	double m_targetValue = 0;
 	double m_timer = 0.0;
 	bool m_animating = false;
+
+	s3d::Texture m_background;
 };
 
 class StatusBar
@@ -128,7 +130,6 @@ public:
 		m_startValue = m_value;
 		m_targetValue = Clamp(value, 0.0, 1.0);
 		m_timer = 0.0;
-		m_animating = true;
 	}
 
 private:
@@ -145,10 +146,17 @@ private:
 
 class TrainingScene : public App::Scene
 {
-	public
-		:
-	TrainingScene(const InitData& init) : IScene(init) {}
+public:
+	TrainingScene(const InitData& init);
 private:
+	s3d::Texture m_background;
+	s3d::Texture m_dropshadow;
+	s3d::Texture m_training_guide;
+
+	s3d::Texture m_btn_howto;
+	s3d::Texture m_btn_explorer;
+	s3d::Texture m_btn_hover;
+
 	const Font font{ FontMethod::MSDF, 48 };
 	String characterImagePath = U"assets/maingame/chara_image/origin_normal.png";
 	Texture characterTexture = s3d::Texture(characterImagePath);

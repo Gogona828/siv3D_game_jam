@@ -3,7 +3,20 @@
 #include "GameData.h"
 #include "MasterData.h"
 # include <Siv3D.hpp>
-using App = s3d::SceneManager<s3d::String, void>;
+#include "Common.h"
+
+TrainingScene::TrainingScene(const InitData& init)
+	: IScene{ init } // SceneManager対応の初期化
+{
+	m_background = s3d::Texture(U"assets/maingame/training/training_bg.png");
+	m_dropshadow = s3d::Texture(U"assets/maingame/training/training_dropshadow.png");;
+	m_training_guide = s3d::Texture(U"assets/maingame/training/trainig_guide.png");;
+
+	m_btn_howto = s3d::Texture(U"assets/maingame/training/btn_howto.png");;
+	m_btn_explorer = s3d::Texture(U"assets/maingame/training/btn_explorer.png");;
+	m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
+}
+
 void TrainingScene::update()
 {
 	if (!initialized)
@@ -130,6 +143,14 @@ void TrainingScene::update()
 }
 void TrainingScene::draw() const
 {
+	m_background.resized(Scene::Size()).draw();
+	m_dropshadow.resized(350).drawAt(Scene::CenterF().x, Scene::CenterF().y+200);
+	m_training_guide.resized(500).draw(260,  20);
+
+	m_btn_howto.resized(m_btn_howto.size() * 0.5).draw(770,170);
+	m_btn_explorer.resized(m_btn_explorer.size() * 0.5).draw(770, 20);
+	//m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
+
 	const s3d::Vec2 barPos{ 100, 200 };
 	const double barMaxWidth = 400.0;
 	const double barHeight = 30.0;
@@ -137,7 +158,7 @@ void TrainingScene::draw() const
 	//基本設定
 	s3d::Scene::SetBackground(s3d::Palette::Gray);
 	//中央にキャラクターを描画
-	characterTexture.resized(200, 200).draw(s3d::Vec2{ 400, 100 });
+	characterTexture.resized(500).drawAt(s3d::Vec2{ Scene::CenterF().x, Scene::CenterF().y+70 });
 	// 左上に残ターン数を表示
 	s3d::RectF currentTurnOuterRect{ s3d::Vec2{20,20}, 190, 130};
 	currentTurnOuterRect.draw(s3d::Palette::White);

@@ -1,19 +1,19 @@
 ﻿# include <Siv3D.hpp>
-
-// 公式 SceneManager を型エイリアス
-using App = s3d::SceneManager<s3d::String, void>;
+#include "Common.h" 
 
 // 前方宣言
 class TitleScene;
 class GameScene;
 class TrainingScene;
 class GameData;
+class ResultScene; // ← 追加！
 
 # include "TitleScene.h"
 # include "GameScene.h"
 # include "TrainingScene.h"
 # include "GameData.h"
 # include "BattleScene.h"
+# include "ResultScene.h" // ← 追加！
 
 void Main()
 {
@@ -27,6 +27,7 @@ void Main()
 	app.add<GameScene>(U"Game");
 	app.add<TrainingScene>(U"Training");
 	app.add<BattleScene>(U"Battle");
+	app.add<ResultScene>(U"Result"); // ← 追加！
 	app.init(U"Title");
 
 	const Font font{ FontMethod::MSDF, 48 };
