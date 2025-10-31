@@ -79,6 +79,9 @@ void TrainingScene::update()
 		//イベント確率の処理
 		Array<int> eventIdArray = eventIdTable(nowEventType, 1);
 		GameData::getInstance().eventList.append(eventIdArray);
+
+		//イベント画面の描画
+		//クリックされたら次の状態へ
 		m_state = TrainingState::EndTraining;
 		break;
 	}

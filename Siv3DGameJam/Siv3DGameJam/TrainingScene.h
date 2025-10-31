@@ -21,6 +21,7 @@ enum class EventType
 	Debuff,
 	None
 };
+
 class BranchStatusBar
 {
 public:
@@ -67,7 +68,9 @@ public:
 			RectF filled(center.x, m_rect.y, w, m_rect.h);
 			filled.draw(Palette::Skyblue);
 		}
-
+		//中央分離帯
+		RectF filled(center.x - 1.0, m_rect.y - 3.0, 2, m_rect.h + 6.0);
+		filled.draw(Palette::White);
 		// 枠線
 		m_rect.drawFrame(2, Palette::White);
 	}
@@ -190,6 +193,9 @@ private:
 	float maxTimer = 10;
 	float cutinTimer = 0;
 	float cutinMaxTimer = 1;
+
+	//イベント描画用
+	bool eventDrawing = false;
 
 	void update() override;
 	void draw() const override;
