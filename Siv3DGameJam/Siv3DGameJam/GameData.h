@@ -1,5 +1,27 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
+
+struct PlayerCharacterInfo
+{
+	int32 pcTextureId = 0;
+	int32 reliability = 0;
+	int32 availability = 0;
+	int32 serviceability = 0;
+	int32 integrity = 0;
+	int32 security = 0;
+};
+
+struct BossCharacterInfo
+{
+	int32 hp = 1234567;
+	int32 breakValue = 3;
+};
+
+struct ResultInfo
+{
+	int32 elapsedTurn = 0;
+};
+
 class GameData
 {
 public:
@@ -50,8 +72,35 @@ public:
 
 		eventList.clear();
 	}
+
+	const PlayerCharacterInfo& infos() const noexcept { return pcInfo; }
+	PlayerCharacterInfo& infos() noexcept { return pcInfo; }
+
+	const BossCharacterInfo& bossInfos() const noexcept { return bossInfo; }
+	BossCharacterInfo& bossInfos() noexcept { return bossInfo; }
+
+	inline int32 Remap(int32 x, double min, double max, bool isClamp = false)
+	{
+		double t = (x - -100) / (100 - -100);
+		if (isClamp)
+		{
+			t = Clamp(t, 0.0, 1.0);
+		}
+		return (int32)(min + t * (max - min));
+	}
+
+	void rebuildPlayerInfo()
+	{
+		pcInfo.reliability = Remap(characterStatus.Reliability, 100, 10000);
+		pcInfo.availability = Remap(characterStatus.Availability, 0, 20);
+		pcInfo.serviceability = Remap(characterStatus.Serviceability, 0, 2000);
+		pcInfo.integrity = Remap(characterStatus.Integrity, 0, 10000);
+		pcInfo.security = Remap(characterStatus.Security, 0, 100);
+	}
 private:
 	GameData() = default;
+	PlayerCharacterInfo pcInfo;
+	BossCharacterInfo bossInfo;
 };
 
 enum class StatusId

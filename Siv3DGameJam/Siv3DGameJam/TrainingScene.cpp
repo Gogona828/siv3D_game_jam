@@ -103,6 +103,7 @@ void TrainingScene::update()
 				{
 					if (GameData::getInstance().characterStatus.toArray()[i] / MasterData::maxStatusValue() >= 0.7)
 					{
+						characterTextureId = i + 1;
 						SetCharacter(MasterData::getTexturePath(i + 1));
 						evoluted = true;
 						break;
@@ -119,14 +120,16 @@ void TrainingScene::update()
 			}
 			if(count >=3)
 			{
+				characterTextureId = 0;
 				SetCharacter(U"assets/maingame/chara_image/bug_normal.png");
 			}
 		}
 		else
 		{
-			//TODO:バトルシーンへ移行
-			//現在はタイトルへ戻してるだけ
-			changeScene(U"Title");
+			GameData& gameData = GameData::getInstance();
+			gameData.infos().pcTextureId = characterTextureId;
+			// バトルシーンへ移行
+			changeScene(U"Battle");
 		}
 		break;
 	default:

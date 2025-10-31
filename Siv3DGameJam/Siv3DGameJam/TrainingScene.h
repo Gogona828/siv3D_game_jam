@@ -204,4 +204,6 @@ private:
 	Array<int> eventIdTable(EventType type,int n);
 	void ChangeStatus(Array<SystemStatusAddData> data);
 	void SetCharacter(String path);
+
+	int32 characterTextureId = 0;
 };
