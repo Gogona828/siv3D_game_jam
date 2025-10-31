@@ -133,6 +133,7 @@ public:
 		m_startValue = m_value;
 		m_targetValue = Clamp(value, 0.0, 1.0);
 		m_timer = 0.0;
+		m_animating = true;
 	}
 
 private:
@@ -193,9 +194,13 @@ private:
 	float maxTimer = 10;
 	float cutinTimer = 0;
 	float cutinMaxTimer = 1;
+	bool cutinFlag = false;
 
 	//イベント描画用
 	bool eventDrawing = false;
+	EventType nowEventType;
+	Texture eventTexture;
+	String eventText;
 
 	void update() override;
 	void draw() const override;
@@ -204,6 +209,11 @@ private:
 	Array<int> eventIdTable(EventType type,int n);
 	void ChangeStatus(Array<SystemStatusAddData> data);
 	void SetCharacter(String path);
+	void SetEventData(String texturePath, String text)
+	{
+		eventTexture = Texture(texturePath);
+		eventText = text;
+	}
 
 	int32 characterTextureId = 0;
 };
