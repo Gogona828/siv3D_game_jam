@@ -38,6 +38,31 @@ void TrainingScene::update()
 				hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
 				size = FileSystem::FileSize(droppedFile.path);
 
+				// ファイルドロップキャラアニメ
+				m_characterAnimTimer = 0.0;
+				m_characterAnimPlaying = true;
+
+				//ファイルドロップアニメ用------------------------------------
+				// ファイルアイコンまたは汎用画像を設定
+				Texture iconTex;
+
+				// 拡張子に応じて適当なアイコンを差し替えてもOK
+				if (fileExtension == U"png" || fileExtension == U"jpg")
+				{
+					iconTex = Texture(droppedFile.path);
+				}
+				else
+				{
+					iconTex = Texture(U"assets/maingame/training/file.png"); // 汎用アイコン
+				}
+
+				// ドロップアニメを生成
+				DropAnim anim;
+				anim.texture = iconTex;
+				anim.pos = Cursor::PosF();
+				dropAnims << anim;
+				//ファイルドロップアニメ用------------------------------------
+
 				//TODO:重複チェック
 				m_state = TrainingState::Event;
 			}
@@ -177,6 +202,29 @@ void TrainingScene::update()
 	m_bars[4].update();
 
 	overloadBar.update();
+
+	// キャラクター拡縮アニメーション進行
+	if (m_characterAnimPlaying)
+	{
+		m_characterAnimTimer += Scene::DeltaTime();
+		if (m_characterAnimTimer >= m_characterAnimDuration)
+		{
+			m_characterAnimTimer = m_characterAnimDuration;
+			m_characterAnimPlaying = false; // 終了
+		}
+	}
+
+	//ファイルドロップアニメ用------------------------------------
+	for (auto& anim : dropAnims)
+	{
+		anim.time += Scene::DeltaTime();
+		anim.pos.y -= 60 * Scene::DeltaTime();     // 上に移動
+		anim.scale = Math::Lerp(1.0, 0.4, anim.time / 1.0); // 縮小
+		anim.alpha = Math::Lerp(1.0, 0.0, anim.time / 1.0); // フェードアウト
+	}
+	// 1秒経過したものを削除
+	dropAnims.remove_if([](const DropAnim& a) { return a.time > 1.0; });
+	//ファイルドロップアニメ用------------------------------------
 }
 void TrainingScene::draw() const
 {
@@ -194,8 +242,29 @@ void TrainingScene::draw() const
 	const double padding = 3.0; // 内側のバーとの余白
 	//基本設定
 	s3d::Scene::SetBackground(s3d::Palette::Gray);
-	//中央にキャラクターを描画
-	characterTexture.resized(500).drawAt(s3d::Vec2{ Scene::CenterF().x, Scene::CenterF().y+70 });
+
+	// 中央にキャラクターを描画
+	const double baseScale = 0.3;
+	double scale = baseScale;
+
+	if (m_characterAnimPlaying)
+	{
+		double t = m_characterAnimTimer / m_characterAnimDuration;
+		scale = baseScale + 0.03 * EaseOutBack(1.0 - Abs(1.0 - t * 2.0));
+	}
+
+	// 描画位置（画面中央下70pxに配置）
+	Vec2 drawPos = Vec2{ Scene::CenterF().x, Scene::Height() +60 };
+
+	// テクスチャサイズ（scale込み）
+	Vec2 scaledSize = Vec2{ characterTexture.width() * scale, characterTexture.height() * scale };
+
+	// drawAt は「中心基準」なので、下中央にしたい場合はオフセット調整
+	characterTexture.scaled(scale).drawAt(drawPos.x, drawPos.y - scaledSize.y / 2);
+
+
+
+
 	// 左上に残ターン数を表示
 	s3d::RectF currentTurnOuterRect{ s3d::Vec2{20,20}, 190, 130};
 	currentTurnOuterRect.draw(s3d::Palette::White);
@@ -232,6 +301,12 @@ void TrainingScene::draw() const
 
 		font(U"{}"_fmt(eventText)).draw(24, Vec2{ 44, 350 }, ColorF{ 1.0 });
 	}
+	//ファイルドロップアニメ用------------------------------------
+	for (const auto& anim : dropAnims)
+	{
+		anim.texture.resized(128 * anim.scale).drawAt(anim.pos, ColorF(1.0, anim.alpha));
+	}
+	//ファイルドロップアニメ用------------------------------------
 }
 
 Array<SystemStatusAddData> TrainingScene::statusTable()

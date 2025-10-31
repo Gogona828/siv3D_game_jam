@@ -89,8 +89,6 @@ private:
 	double m_targetValue = 0;
 	double m_timer = 0.0;
 	bool m_animating = false;
-
-	s3d::Texture m_background;
 };
 
 class StatusBar
@@ -160,6 +158,21 @@ private:
 	s3d::Texture m_btn_howto;
 	s3d::Texture m_btn_explorer;
 	s3d::Texture m_btn_hover;
+
+	struct DropAnim
+	{
+		Texture texture;
+		Vec2 pos;
+		double scale = 1.0;
+		double alpha = 1.0;
+		double time = 0.0;
+	};
+
+	Array<DropAnim> dropAnims;
+
+	double m_characterAnimTimer = 0.0;
+	bool m_characterAnimPlaying = false;
+	double m_characterAnimDuration = 0.6; // 拡縮アニメ時間（秒）
 
 	const Font font{ FontMethod::MSDF, 48 };
 	String characterImagePath = U"assets/maingame/chara_image/origin_normal.png";
