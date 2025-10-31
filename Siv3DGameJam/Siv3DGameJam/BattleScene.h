@@ -1,5 +1,6 @@
 ﻿#pragma once
 # include <Siv3D.hpp>
+# include "Common.h" 
 # include "GameData.h"
 # include "VolumeSlider.h"
 # include "MasterData.h"
@@ -8,8 +9,6 @@
 # include "PlayerCharacterView.h"
 # include "BehaviorInfoView.h"
 # include "BossCharacterView.h"
-
-using App = s3d::SceneManager<s3d::String, void>;
 
 class BattleScene : public App::Scene
 {
