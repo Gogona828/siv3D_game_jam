@@ -1,4 +1,8 @@
 [
-    {"UpStatusProbability":[0,0,0,0,0]},
-    {"DownStatusProbability":[]}
+    {"UpStatusProbability":[1,2,3,4,5]},
+    {"UpStatusMultiply":[100,100,100,100,100]},
+    {"DownStatusProbability":[1,2,3,4,5]},
+    {"DownStatusMultiply":[100,100,100,100,100]},
+    {"EventFireProbability":[100]},
+    {"EventProbability":[25,25,25,25]}
 ]

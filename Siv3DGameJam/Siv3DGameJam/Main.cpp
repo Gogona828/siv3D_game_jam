@@ -32,7 +32,6 @@ void Main()
 	app.init(U"Title");
 
 	const Font font{ FontMethod::MSDF, 48 };
-	Array<int> ans = JsonReader::readData(U"assets/maingame/training/data/txt.json", U"UpStatusProbability");
 
 	while (s3d::System::Update()) {
 		app.update();

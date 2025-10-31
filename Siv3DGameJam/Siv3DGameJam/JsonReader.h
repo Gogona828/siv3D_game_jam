@@ -4,12 +4,12 @@
 class JsonReader
 {
 public:
-	static Array<int> readData(const String& filePath, const String& key)
+	static bool readData(const String& filePath, const String& key, Array<int>& outArray)
 	{
 		const JSON json = JSON::Load(filePath);
 		if (!json)
 		{
-			throw Error{ U"JSON 読み込み失敗: {}"_fmt(filePath) };
+			return false;
 		}
 
 		for (const auto& item : json.arrayView())
@@ -21,10 +21,10 @@ public:
 				{
 					result << v.get<int>();
 				}
-				return result;
+				outArray = result;
+				return true;
 			}
 		}
-
-		throw Error{ U"指定キー {} が JSON 内に存在しません。"_fmt(key) };
+		return false;
 	}
 };
