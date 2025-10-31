@@ -14,21 +14,93 @@ TrainingScene::TrainingScene(const InitData& init)
 
 	m_btn_howto = s3d::Texture(U"assets/maingame/training/btn_howto.png");;
 	m_btn_explorer = s3d::Texture(U"assets/maingame/training/btn_explorer.png");;
+	m_btn_restart = s3d::Texture(U"assets/result/restart_normal.png");;
 	m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
 	eventBackGround = s3d::Texture(U"assets/maingame/event_image/event_bg.png");
 
 	cutinTexture = Texture(U"assets/maingame/Event_image/reliability_cutin.png");
 
+	m_explorerPos = Vec2(770, 20);
+	m_howToPos = Vec2(770, 150);
+	m_restartPos = Vec2(770, 280);
+	// ボタンの描画倍率（0.5 = 半分サイズ）
+	m_buttonScale = 0.5;
 }
 
 void TrainingScene::update()
 {
+	if (MouseL.down())
+		clickEffect.spawn(Cursor::PosF());
+	clickEffect.update();
+
 	if (!initialized)
 	{
 		GameData::getInstance().reset();
 		GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(0);
 		initialized = true;
 	}
+
+	constexpr double doubleClickInterval = 0.3;
+
+	const RectF explorerRect{ m_explorerPos, m_btn_explorer.size() * m_buttonScale };
+	const RectF howToRect{ m_howToPos, m_btn_howto.size() * m_buttonScale };
+	const RectF restartRect{ m_restartPos, m_btn_restart.size() * m_buttonScale };
+
+	if (explorerRect.mouseOver())
+	{
+		m_hovered = U"Explorer";
+
+		if (MouseL.down())
+		{
+			double now = Scene::Time();
+			if (now - m_lastClickTimeExplorer < doubleClickInterval)
+			{
+				AudioManager::Get().playSE(m_btnSE);
+
+				system("explorer.exe");
+			}
+			m_lastClickTimeExplorer = now;
+		}
+	}
+	else if (howToRect.mouseOver())
+	{
+		m_hovered = U"HowTo";
+
+		if (MouseL.down())
+		{
+			double now = Scene::Time();
+			if (now - m_lastClickTimeHowTo < doubleClickInterval)
+			{
+				const FilePath mdFile = U"assets/howto.md";
+				if (FileSystem::Exists(mdFile))
+				{
+					System::LaunchFile(mdFile);
+				}
+			}
+			m_lastClickTimeHowTo = now;
+		}
+	}
+	else if (restartRect.mouseOver())
+	{
+		m_hovered = U"Restart";
+
+		if (MouseL.down())
+		{
+			double now = Scene::Time();
+			if (now - m_lastClickTimeRestart < doubleClickInterval)
+			{
+				AudioManager::Get().playSE(m_btnSE);
+				changeScene(U"Title", 1.0s);
+			}
+			m_lastClickTimeRestart = now;
+		}
+	}
+	else
+	{
+		m_hovered.clear();
+	}
+
+
 	if (cutinPlaying)
 	{
 		cutinTimer += Scene::DeltaTime();
@@ -167,12 +239,17 @@ void TrainingScene::update()
 
 			if (nowEventType == EventType::None)
 			{
+				// カットイン関連フラグをリセット
 				cutinPlaying = false;
-				cutinStarted = false; 
+				cutinWaiting = false;
+				cutinClosing = false;
+				cutinStarted = false;
+
 				m_state = TrainingState::EndTraining;
 				break;
 			}
 		}
+
 
 		// カットイン再生中
 		if (cutinPlaying)
@@ -308,8 +385,7 @@ void TrainingScene::draw() const
 	m_dropshadow.resized(350).drawAt(Scene::CenterF().x, Scene::CenterF().y+200);
 	m_training_guide.resized(500).draw(260,  20);
 
-	m_btn_howto.resized(m_btn_howto.size() * 0.5).draw(770,170);
-	m_btn_explorer.resized(m_btn_explorer.size() * 0.5).draw(770, 20);
+
 	//m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
 
 	const s3d::Vec2 barPos{ 100, 200 };
@@ -338,8 +414,23 @@ void TrainingScene::draw() const
 	// drawAt は「中心基準」なので、下中央にしたい場合はオフセット調整
 	characterTexture.scaled(scale).drawAt(drawPos.x, drawPos.y - scaledSize.y / 2);
 
+	// ボタン描画（リサイズ反映）
+	m_btn_explorer.resized(m_btn_explorer.size() * m_buttonScale).draw(m_explorerPos);
+	m_btn_howto.resized(m_btn_howto.size() * m_buttonScale).draw(m_howToPos);
+	m_btn_restart.resized(m_btn_restart.size() * m_buttonScale).draw(m_restartPos);
 
-
+	if (m_hovered == U"Explorer")
+	{
+		m_btn_hover.resized(m_btn_hover.size() * m_buttonScale).draw(m_explorerPos);
+	}
+	else if (m_hovered == U"HowTo")
+	{
+		m_btn_hover.resized(m_btn_hover.size() * m_buttonScale).draw(m_howToPos);
+	}
+	else if (m_hovered == U"Restart")
+	{
+		m_btn_hover.resized(m_btn_restart.size() * m_buttonScale).draw(m_restartPos);
+	}
 
 	// 左上に残ターン数を表示
 	s3d::RectF currentTurnOuterRect{ s3d::Vec2{20,20}, 190, 130};
@@ -411,6 +502,8 @@ void TrainingScene::draw() const
 			.resized(Scene::Width(), srcH * (Scene::Width() / (double)cutinTexture.width()))
 			.drawAt(center);
 	}
+
+	clickEffect.draw();    // クリックエフェクト描画
 }
 
 Array<SystemStatusAddData> TrainingScene::statusTable()
