@@ -170,9 +170,24 @@ private:
 
 	Array<DropAnim> dropAnims;
 
+	s3d::Texture cutinTexture;
+	//double cutinTimer = 0.0;
+	//double cutinDuration = 0.5; // 0.5秒で全体表示
+	//bool cutinPlaying = false;
+
+
 	double m_characterAnimTimer = 0.0;
 	bool m_characterAnimPlaying = false;
 	double m_characterAnimDuration = 0.6; // 拡縮アニメ時間（秒）
+
+	// カットイン関連
+	bool cutinClosing = false;
+	bool cutinPlaying = false;
+	bool cutinStarted = false;
+	bool cutinWaiting = false;   // カットイン表示だけして待機中
+	float cutinDuration = 0.05; // 例: 0.5秒
+	float waitAfterCutin = 0.0;
+	double waitTimeAfterCutin = 1.0; // 秒（今は0.5）
 
 	const Font font{ FontMethod::MSDF, 48 };
 	String characterImagePath = U"assets/maingame/chara_image/origin_normal.png";

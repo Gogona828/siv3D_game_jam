@@ -16,6 +16,9 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_btn_explorer = s3d::Texture(U"assets/maingame/training/btn_explorer.png");;
 	m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
 	eventBackGround = s3d::Texture(U"assets/maingame/event_image/event_bg.png");
+
+	cutinTexture = Texture(U"assets/maingame/Event_image/reliability_cutin.png");
+
 }
 
 void TrainingScene::update()
@@ -25,6 +28,59 @@ void TrainingScene::update()
 		GameData::getInstance().reset();
 		initialized = true;
 	}
+	if (cutinPlaying)
+	{
+		cutinTimer += Scene::DeltaTime();
+		if (cutinTimer >= cutinDuration)
+		{
+			cutinTimer = 0.0;
+			cutinPlaying = false;
+			cutinWaiting = true; // 表示だけの状態に移行
+		}
+	}
+	if (cutinWaiting)
+	{
+		waitAfterCutin += Scene::DeltaTime();
+		if (waitAfterCutin >= waitTimeAfterCutin)
+		{
+			cutinWaiting = false;
+			cutinClosing = true; // 閉じるアニメに移行
+			cutinTimer = 0.0;
+		}
+	}
+	if (cutinClosing)
+	{
+		cutinTimer += Scene::DeltaTime();
+		if (cutinTimer >= cutinDuration)
+		{
+			cutinClosing = false; // 完全に終了
+			cutinTimer = 0.0;
+			// 次のイベント処理へ移行
+			eventDrawing = true;
+
+			eventDrawing = true;
+
+			// イベント画面描画用のテクスチャとテキストを設定
+			switch (nowEventType)
+			{
+			case EventType::Attack:
+				SetEventData(U"assets/maingame/event_image/event_1.png", U"処理速度が向上した");
+				break;
+			case EventType::Heal:
+				SetEventData(U"assets/maingame/event_image/event_2.png", U"処理速度が向上した");
+				break;
+			case EventType::Buff:
+				SetEventData(U"assets/maingame/event_image/event_3.png", U"処理速度が向上した");
+				break;
+			case EventType::Debuff:
+				SetEventData(U"assets/maingame/event_image/event_4.png", U"処理速度が向上した");
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
 	switch (m_state)
 	{
 	case TrainingState::CanInputFile:
@@ -95,53 +151,68 @@ void TrainingScene::update()
 		break;
 	case TrainingState::AfterEvent:
 	{
-		if (!eventDrawing)
+		// カットイン開始前の処理
+		if (!cutinStarted && !m_characterAnimPlaying)
 		{
-			//イベント種類の抽選
+			cutinStarted = true;     // 二重再生防止
+			cutinPlaying = true;     // カットイン再生フラグON
+			cutinTimer = 0.0;        // タイマーリセット
+			waitAfterCutin = 0.0;    // 待機タイマーリセット
+
+			// イベント種類の抽選
 			nowEventType = eventTypeTable();
-			//イベント確率の処理
 			Array<int> eventIdArray = eventIdTable(nowEventType, 1);
 			GameData::getInstance().eventList.append(eventIdArray);
-			if(nowEventType == EventType::None)
+
+			if (nowEventType == EventType::None)
 			{
-				//イベントなしの場合はそのまま終了へ
+				cutinPlaying = false;
 				m_state = TrainingState::EndTraining;
 				break;
 			}
-			//カットイン処理
-			cutinFlag = true;
-			cutinTimer += s3d::Scene::DeltaTime();
-			if (cutinTimer <= cutinMaxTimer)break;
-			cutinTimer = 0;
-			cutinFlag = false;
+		}
 
-			//イベント画面の描画決定
-			switch (nowEventType)
-			{
-			case EventType::Attack:
-				SetEventData(U"assets/maingame/event_image/event_1.png", U"処理速度が向上した");
-				break;
-			case EventType::Heal:
-				SetEventData(U"assets/maingame/event_image/event_2.png", U"処理速度が向上した");//TODO:テキスト変更
-				break;
-			case EventType::Buff:
-				SetEventData(U"assets/maingame/event_image/event_3.png", U"処理速度が向上した");//TODO:テキスト変更
-				break;
-			case EventType::Debuff:
-				SetEventData(U"assets/maingame/event_image/event_4.png", U"処理速度が向上した");//TODO:テキスト変更
-				break;
-			default:
-				break;
-			}
-			eventDrawing = true;
-		}
-		if (MouseL.down())
+		// カットイン再生中
+		if (cutinPlaying)
 		{
-			eventDrawing = false;
-			//クリックされたら次の状態へ
-			m_state = TrainingState::EndTraining;
+			double t = cutinTimer / cutinDuration;
+			Vec2 center = Scene::CenterF();
+
+			// 画像をシーン横幅に合わせる
+			double scale = static_cast<double>(Scene::Width()) / cutinTexture.width();
+
+			// リサイズ後の縦幅
+			double resizedHeight = cutinTexture.height() * scale;
+
+			// 上下に広がるアニメ
+			double halfH = resizedHeight / 2 * t;
+			double topY = center.y - halfH;
+			double bottomY = center.y + halfH;
+
+			// 縦方向の描画範囲を srcRect で切り出す
+			int srcH = static_cast<int>(cutinTexture.height() * t);
+			Rect srcRect(0, 0, cutinTexture.width(), srcH);
+
+			// 描画
+			cutinTexture(srcRect).resized(Scene::Width(), srcH * scale).drawAt(center.x, topY + (srcH * scale) / 2);
 		}
-		
+
+		// カットイン終了後の待機時間
+		if (!cutinPlaying && !eventDrawing && !cutinClosing&& !cutinWaiting)
+		{
+			waitAfterCutin += Scene::DeltaTime();
+		}
+
+		// イベント画面描画中
+		if (eventDrawing)
+		{
+			if (MouseL.down())
+			{
+				eventDrawing = false;
+				cutinStarted = false; // 次回のカットインのためにリセット
+				m_state = TrainingState::EndTraining;
+			}
+		}
 		break;
 	}
 	case TrainingState::EndTraining:
@@ -307,6 +378,34 @@ void TrainingScene::draw() const
 		anim.texture.resized(128 * anim.scale).drawAt(anim.pos, ColorF(1.0, anim.alpha));
 	}
 	//ファイルドロップアニメ用------------------------------------
+
+	if (cutinPlaying || cutinWaiting)
+	{
+		double t = cutinPlaying ? (cutinTimer / cutinDuration) : 1.0; // 待機中は最大値
+		Vec2 center = Scene::CenterF();
+		int srcH = static_cast<int>(cutinTexture.height() * t);
+		int srcY = cutinTexture.height() / 2 - srcH / 2;
+		Rect srcRect(0, srcY, cutinTexture.width(), srcH);
+
+		cutinTexture(srcRect)
+			.resized(Scene::Width(), srcH * (Scene::Width() / (double)cutinTexture.width()))
+			.drawAt(center);
+	}
+
+	// 消去用（逆再生）
+	if (cutinClosing)
+	{
+		double t = cutinTimer / cutinDuration;
+		double revT = 1.0 - t;
+		Vec2 center = Scene::CenterF();
+		int srcH = static_cast<int>(cutinTexture.height() * revT);
+		int srcY = cutinTexture.height() / 2 - srcH / 2;
+		Rect srcRect(0, srcY, cutinTexture.width(), srcH);
+
+		cutinTexture(srcRect)
+			.resized(Scene::Width(), srcH * (Scene::Width() / (double)cutinTexture.width()))
+			.drawAt(center);
+	}
 }
 
 Array<SystemStatusAddData> TrainingScene::statusTable()
