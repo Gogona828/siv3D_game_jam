@@ -10,7 +10,26 @@ struct PlayerCharacterInfo
 	int32 integrity = 0;
 	int32 security = 0;
 };
-
+enum class StatusId
+{
+	Reliability,	// 0:信頼性
+	Availability,	// 1:可用性
+	Serviceability,	// 2:保守性
+	Intergrity,		// 3:保全性
+	Security,		// 4:安全性
+	Overload		// 5:容量
+};
+enum class CharacterType
+{
+	Reliability,	// 0:信頼性
+	Availability,	// 1:可用性
+	Serviceability,	// 2:保守性
+	Intergrity,		// 3:保全性
+	Security,		// 4:安全性
+	Overload,		// 5:容量
+	NotEvoluted,	// 6:未進化
+	Bug				// 7:バグキャラ
+};
 struct BossCharacterInfo
 {
 	int32 hp = 1234567;
@@ -56,6 +75,7 @@ public:
 
 	//データ
 	CharacterStatus characterStatus;
+	CharacterType evolutedCharacterTextureId;
 	Array<int> eventList;
 	//データリセット
 	void reset()
@@ -101,14 +121,4 @@ private:
 	GameData() = default;
 	PlayerCharacterInfo pcInfo;
 	BossCharacterInfo bossInfo;
-};
-
-enum class StatusId
-{
-	Reliability,	// 0:信頼性
-	Availability,	// 1:可用性
-	Serviceability,	// 2:保守性
-	Intergrity,		// 3:保全性
-	Security,		// 4:安全性
-	Overload		// 5:容量
 };

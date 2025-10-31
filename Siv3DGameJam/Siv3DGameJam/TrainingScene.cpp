@@ -36,6 +36,7 @@ void TrainingScene::update()
 	if (!initialized)
 	{
 		GameData::getInstance().reset();
+		GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(0);
 		initialized = true;
 	}
 
@@ -243,6 +244,7 @@ void TrainingScene::update()
 				cutinWaiting = false;
 				cutinClosing = false;
 				cutinStarted = false;
+
 				m_state = TrainingState::EndTraining;
 				break;
 			}
@@ -303,6 +305,7 @@ void TrainingScene::update()
 			if (currentTurn == 3 && !evoluted)
 			{
 				SetCharacter(U"assets/maingame/chara_image/evolution_normal.png");
+				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(7);
 			}
 			if (!evoluted)
 			{
@@ -313,6 +316,7 @@ void TrainingScene::update()
 						characterTextureId = i + 1;
 						SetCharacter(MasterData::getTexturePath(i + 1));
 						evoluted = true;
+						GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(i + 1);
 						break;
 					}
 				}
@@ -329,6 +333,7 @@ void TrainingScene::update()
 			{
 				characterTextureId = 0;
 				SetCharacter(U"assets/maingame/chara_image/bug_normal.png");
+				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(7);
 			}
 		}
 		else
@@ -530,7 +535,7 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 		statusAddData.push_back(overloadStatusData);
 
 	}
-	else if (fileExtension == U"Zip")
+	else if (fileExtension == U"zip")
 	{
 		SystemStatusAddData overloadStatusData;
 		overloadStatusData.addId = static_cast<int>(StatusId::Overload);

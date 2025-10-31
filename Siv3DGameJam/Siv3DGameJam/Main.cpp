@@ -14,6 +14,7 @@ class ResultScene; // ← 追加！
 # include "GameData.h"
 # include "BattleScene.h"
 # include "ResultScene.h" // ← 追加！
+# include "JsonReader.h"
 
 void Main()
 {
@@ -35,7 +36,6 @@ void Main()
 	while (s3d::System::Update()) {
 		app.update();
 		const Point cursorPos = Cursor::Pos();
-
 		//font(U"{}"_fmt(cursorPos)).draw(40, Vec2{ 40, 40 }, ColorF{ 0.1 });
 	}
 }
