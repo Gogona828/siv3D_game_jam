@@ -480,7 +480,7 @@ void TrainingScene::draw() const
 		m_bars[i].draw();
 	}
 	overloadBar.draw();	
-	//下にファイルを表示
+
 	if (eventDrawing)
 	{
 		eventBackGround.resized(896, 504).drawAt(Scene::CenterF());	//フェード背景
@@ -495,6 +495,9 @@ void TrainingScene::draw() const
 		eventTexture.resized(580).drawAt(245, 200);
 
 		font(U"{}"_fmt(eventText)).draw(24, Vec2{ 44, 350 }, ColorF{ 1.0 });
+
+		RectF getSkill{ s3d::Vec2{ 600, 450 }, 200, 50 };
+		getSkill.draw(ColorF{1,1,1,1});
 	}
 	//ファイルドロップアニメ用------------------------------------
 	for (const auto& anim : dropAnims)
@@ -645,14 +648,9 @@ EventType TrainingScene::eventTypeTable()
 	if (JsonReader::readData(jsonPath, U"EventFireProbability", eventProbability))
 	{
 		int probability = Random(1, 100);
-		//拡張子に応じたイベント確率の調整
-		if (fileExtension == U"png")
-		{
-			probability = 100; //必ずイベント発生
-		}
 
 		//イベントがそもそも発生するかの判定
-		if (100 - probability <= eventProbability[0])
+		if (100 - probability >= eventProbability[0])
 		{
 			eventType = EventType::None;
 		}
