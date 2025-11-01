@@ -250,13 +250,13 @@ private:
 
 	Array<BranchStatusBar> m_bars = {
 			{ Vec2{ 20, 220 }, 200, 20 },
-			{ Vec2{ 20, 260 }, 200, 20 },
-			{ Vec2{ 20, 300 }, 200, 20 },
-			{ Vec2{ 20, 340 }, 200, 20 },
-			{ Vec2{ 20, 380 }, 200, 20 },
+			{ Vec2{ 20, 270 }, 200, 20 },
+			{ Vec2{ 20, 320 }, 200, 20 },
+			{ Vec2{ 20, 370 }, 200, 20 },
+			{ Vec2{ 20, 420 }, 200, 20 },
 	};
 	Array<GetItemViewUnit> getItemUnits;
-	StatusBar overloadBar{ Vec2{ 20, 440 }, 200, 20 };
+	StatusBar overloadBar{ Vec2{ 20, 470 }, 200, 20 };
 
 	bool initialized = false;
 
