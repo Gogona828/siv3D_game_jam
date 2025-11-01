@@ -513,7 +513,7 @@ void TrainingScene::draw() const
 	font(Format(GameData::getInstance().characterStatus.Serviceability)).draw(20, Arg::topRight(210, 260), ColorF{ 1.0 });
 	font(Format(GameData::getInstance().characterStatus.Integrity)).draw(20, Arg::topRight(210, 310), ColorF{ 1.0 });
 	font(Format(GameData::getInstance().characterStatus.Security)).draw(20, Arg::topRight(210, 360), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Overload)).draw(20, Arg::topRight(210, 430), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Overload) + U"%").draw(20, Arg::topRight(210, 430), ColorF{1.0});
 
 	for (auto i : step(m_bars.size()))
 	{
@@ -674,7 +674,7 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 	{
 		SystemStatusAddData overloadStatusData;
 		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = (size / (1024 * 1024 * 1024) + Random(3, 10)) * -1;
+		overloadStatusData.addValue = (size / (1024 * 1024 * 1024) + Random(7, 10)) * -1 * 7.0;
 		statusAddData.push_back(overloadStatusData);
 	}
 	else

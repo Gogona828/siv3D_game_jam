@@ -7,11 +7,11 @@
     15
   ],
   "UpStatusValueMultiply": [
-    110,
-    110,
-    110,
-    150,
-    110
+    0,
+    0,
+    0,
+    0,
+    0
   ],
   "DownStatusProbability": [
     40,
@@ -21,14 +21,14 @@
     10
   ],
   "DownStatusValueMultiply": [
-    110,
-    110,
-    110,
-    110,
-    110
+    0,
+    0,
+    0,
+    0,
+    0
   ],
   "EventFireProbability": [
-    41
+    0
   ],
   "EventCountProbability": [
     90,
