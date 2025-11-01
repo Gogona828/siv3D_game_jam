@@ -338,7 +338,7 @@ void TrainingScene::update()
 						characterTextureId = i + 1;
 						SetCharacter(MasterData::getTexturePath(i + 1));
 						evoluted = true;
-						GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(i + 1);
+						GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(i);
 
 						// ★ここでカットイン画像更新
 						UpdateCutinTexture();
@@ -496,8 +496,10 @@ void TrainingScene::draw() const
 
 		font(U"{}"_fmt(eventText)).draw(24, Vec2{ 44, 350 }, ColorF{ 1.0 });
 
-		RectF getSkill{ s3d::Vec2{ 600, 450 }, 200, 50 };
-		getSkill.draw(ColorF{1,1,1,1});
+		RectF getSkillTitleBackground{ s3d::Vec2{ 560, 38 }, 250, 50 };
+		getSkillTitleBackground.draw(ColorF{1,1,1,0.5});
+		font(U"入手物").draw(TextStyle::Outline(0.2, s3d::Palette::Yellow), 28, Vec2{ 640, 43 }, ColorF{ 1.0 });
+		font(U"クリックで閉じる").draw(18, Vec2{ 375, 420 }, Palette::White);
 	}
 	//ファイルドロップアニメ用------------------------------------
 	for (const auto& anim : dropAnims)
