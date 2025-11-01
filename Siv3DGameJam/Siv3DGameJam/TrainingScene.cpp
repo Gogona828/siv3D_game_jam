@@ -4,6 +4,7 @@
 #include "MasterData.h"
 # include <Siv3D.hpp>
 #include "Common.h"
+#include "JsonReader.h"
 
 TrainingScene::TrainingScene(const InitData& init)
 	: IScene{ init } // SceneManager対応の初期化
@@ -234,7 +235,25 @@ void TrainingScene::update()
 
 			// イベント種類の抽選
 			nowEventType = eventTypeTable();
-			Array<int> eventIdArray = eventIdTable(nowEventType, 1);
+			//抽選確率をJsonから取得
+			int eventCount = 1;
+			Array<int> eventProbabilities;
+			String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
+			if (JsonReader::readData(jsonPath, U"EventCountProbability", eventProbabilities))
+			{
+				int currentProb = 0;
+				int rand = Random(1, 100);
+				for (size_t i = 0; i < eventProbabilities.size(); i++)
+				{
+					currentProb += eventProbabilities[i];
+					if (rand <= currentProb)
+					{
+						eventCount = static_cast<int>(i);
+						break;
+					}
+				}
+			}
+			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount);
 			GameData::getInstance().eventList.append(eventIdArray);
 
 			if (nowEventType == EventType::None)
@@ -517,25 +536,72 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 	int param = static_cast<int>(digit * mul * 1.3);
 	//さらに各ステータスRandom 0-5の範囲で変動を加える
 	//ステータス変動は「変動基本値 + Random（０－５の範囲）を加算」「（変動基本値/3）＋ Random(0-5)を減算」「容量(GB) + Random(0-10)を加算（Zipを除く）」の３つ
-	//拡張子に応じたステータス変動の先行抽選
-	if(fileExtension == U"txt")
+	String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
+	Array<int> upStatusProbability;
+	if (JsonReader::readData(jsonPath, U"UpStatusProbability", upStatusProbability))
 	{
-		SystemStatusAddData upStatusData;
-		upStatusData.addId = static_cast<int>(StatusId::Intergrity);
-		upStatusData.addValue = param + Random(0, 5);
-		statusAddData.push_back(upStatusData);
-		SystemStatusAddData downStatusData;
-		downStatusData.addId = static_cast<int>(StatusId::Security);
-		downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1;
-		statusAddData.push_back(downStatusData);
-
-		SystemStatusAddData overloadStatusData;
-		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = (size / (1024 * 1024 * 1024) + Random(0,10));
-		statusAddData.push_back(overloadStatusData);
-
+		int allWeight = 0;
+		for (const auto& weight : upStatusProbability)
+		{
+			allWeight += weight;
+		}
+		int rnd = Random(1, allWeight);
+		int cumulativeWeight = 0;
+		for(int i = 0; i < upStatusProbability.size(); i++)
+		{
+			cumulativeWeight += upStatusProbability[i];
+			if(rnd <= cumulativeWeight)
+			{
+				SystemStatusAddData upStatusData;
+				upStatusData.addId = i;
+				Array<int> upStatusValueMultiply;
+				if(JsonReader::readData(jsonPath, U"UpStatusValueMultiply", upStatusValueMultiply))
+				{
+					upStatusData.addValue = (param + Random(0, 5)) * (upStatusValueMultiply[i] * 0.01);
+				}
+				else
+				{
+					//該当データがなければ1倍で処理
+					upStatusData.addValue = (param + Random(0, 5)) * 1;
+				}
+				statusAddData.push_back(upStatusData);
+				break;
+			}
+		}
 	}
-	else if (fileExtension == U"zip")
+	Array<int> downStatusProbability;
+	if(JsonReader::readData(jsonPath, U"DownStatusProbability", downStatusProbability))
+	{
+		int allWeight = 0;
+		for (const auto& weight : downStatusProbability)
+		{
+			allWeight += weight;
+		}
+		int rnd = Random(1, allWeight);
+		int cumulativeWeight = 0;
+		for (int i = 0; i < downStatusProbability.size(); i++)
+		{
+			cumulativeWeight += downStatusProbability[i];
+			if (rnd <= cumulativeWeight)
+			{
+				SystemStatusAddData downStatusData;
+				downStatusData.addId = i;
+				Array<int> downStatusValueMultiply;
+				if (JsonReader::readData(jsonPath, U"DownStatusValueMultiply", downStatusValueMultiply))
+				{
+					downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1 * (downStatusValueMultiply[i] * 0.01);
+				}
+				else
+				{
+					//該当データがなければ1倍で処理
+					downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1 * 1;
+				}
+				statusAddData.push_back(downStatusData);
+				break;
+			}
+		}
+	}
+	if (fileExtension == U"zip")
 	{
 		SystemStatusAddData overloadStatusData;
 		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
@@ -560,34 +626,95 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 		statusAddData.push_back(overloadStatusData);
 	}
 	return statusAddData;
-
-
-	//切り出し要件
-	//ステータス抽選に確率適応
-	//各ステータスに変動倍率を適応
-	//それらをJsonで拡張しやすいようにする
 }
 EventType TrainingScene::eventTypeTable()
 {
 	EventType eventType;
 
-	int probability = Random(1, 100);
-	//拡張子に応じたイベント確率の調整
-	if (fileExtension == U"png")
+	String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
+	Array<int> eventProbability;
+	if (JsonReader::readData(jsonPath, U"EventFireProbability", eventProbability))
 	{
-		probability = 100; //必ずイベント発生
-	}
+		int probability = Random(1, 100);
+		//拡張子に応じたイベント確率の調整
+		if (fileExtension == U"png")
+		{
+			probability = 100; //必ずイベント発生
+		}
 
-	//イベントがそもそも発生するかの判定
-	if (probability <= 40)
-	{
-		eventType = EventType::None;
+		//イベントがそもそも発生するかの判定
+		if (100 - probability <= eventProbability[0])
+		{
+			eventType = EventType::None;
+		}
+		else
+		{
+
+			//ファイルが該当する場合、イベントの種類の確率をJsonから取得
+			if (JsonReader::readData(jsonPath, U"EventTypeProbability", eventProbability))
+			{
+				int allWeight = 0;
+				for (const auto& weight : eventProbability)
+				{
+					allWeight += weight;
+				}
+				int rnd = Random(1, allWeight);
+				int cumulativeWeight = 0;
+				for (size_t i = 0; i < eventProbability.size(); i++)
+				{
+					cumulativeWeight += eventProbability[i];
+					if (rnd <= cumulativeWeight)
+					{
+						switch (i)
+						{
+						case 0:
+							eventType = EventType::Attack;
+							break;
+						case 1:
+							eventType = EventType::Heal;
+							break;
+						case 2:
+							eventType = EventType::Buff;
+							break;
+						case 3:
+							eventType = EventType::Debuff;
+							break;
+						default:
+							eventType = EventType::None;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				//ファイルが該当しなかった場合、ランダムで決定
+				//現状は等しく起きうる
+				int eventProb = Random(1, 4);
+				if (eventProb == 1)
+				{
+					eventType = EventType::Attack;
+				}
+				else if (eventProb == 2)
+				{
+					eventType = EventType::Heal;
+				}
+				else if (eventProb == 3)
+				{
+					eventType = EventType::Buff;
+				}
+				else
+				{
+					eventType = EventType::Debuff;
+				}
+			}
+		}
 	}
 	else
 	{
-		//発生する場合、イベントの種類を決定
+		//ファイルが該当しなかった場合、ランダムで決定
 		//現状は等しく起きうる
-		int eventProb = Random(1,4);
+		int eventProb = Random(1, 4);
 		if (eventProb == 1)
 		{
 			eventType = EventType::Attack;

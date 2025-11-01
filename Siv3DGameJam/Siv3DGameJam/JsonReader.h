@@ -12,19 +12,32 @@ public:
 			return false;
 		}
 
-		for (const auto& item : json.arrayView())
+		// 指定キーが存在しない場合
+		if (!json.hasElement(key))
 		{
-			if (item.hasElement(key))
+			return false;
+		}
+
+		const auto& value = json[key];
+
+		// 値が配列の場合
+		if (value.isArray())
+		{
+			for (const auto& v : value.arrayView())
 			{
-				Array<int> result;
-				for (const auto& v : item[key].arrayView())
-				{
-					result << v.get<int>();
-				}
-				outArray = result;
-				return true;
+				outArray << v.get<int>();
 			}
 		}
-		return false;
+		// 値が単一数値の場合（EventFireProbability が [100] → OK）
+		else if (value.isNumber())
+		{
+			outArray << value.get<int>();
+		}
+		else
+		{
+			return false; // 型が違う
+		}
+
+		return true;
 	}
 };
