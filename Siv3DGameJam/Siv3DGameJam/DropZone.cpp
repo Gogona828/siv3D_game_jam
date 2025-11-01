@@ -6,9 +6,17 @@ DropZone::DropZone(const SizeF& zoneSize, double gap)
 	layoutHorizontalCenter(zoneSize, gap);
 }
 
-void DropZone::setDropBoxTexture(int32 num, String path)
+void DropZone::setDropBoxTexture(int32 num, String path, String front)
 {
 	m_zones[num].zoneTexture = Texture(path);
+	if (front.isEmpty())
+	{
+		m_zones[num].frontVisble = false;
+		return;
+	}
+
+	m_zones[num].frontTexture = Texture(front);
+	m_zones[num].frontVisble = true;
 }
 
 void DropZone::layoutHorizontalCenter(const SizeF& zoneSize, double gap)
@@ -115,7 +123,9 @@ void DropZone::update()
 			if (isOk)
 			{
 				// 認証
-				Console << U"[ACCEPT][" << i << U"] " << drop.path;
+				setDropBoxTexture(i, playerBoard, playerFront);
+				// TODO: スキル生成
+
 			}
 			else
 			{
@@ -139,7 +149,9 @@ void DropZone::draw() const
 	for (const auto& zone : m_zones)
 	{
 		zone.zoneTexture.resized(zone.rect.size).draw(zone.rect.pos);
-		const double thickness = zone.mouseOver ? 4.0 : 2.5;
-		//zone.rect.drawFrame(thickness);
+		if (!zone.frontVisble) continue;
+		zone.frontTexture.resized(zone.rect.size / 2).draw(Arg::center(zone.rect.center()));
+		/*RectF rect = RectF(zone.rect.leftX() + 50 / 2, zone.rect.centerY());
+		Texture(U"assets/maingame/battle/battle_triangle.png").draw(rect.pos);*/
 	}
 }

@@ -120,9 +120,12 @@
     <ClCompile Include="BattleScene.cpp" />
     <ClCompile Include="BehaviorInfoView.cpp" />
     <ClCompile Include="BossCharacterView.cpp" />
+    <ClCompile Include="BruteForce.cpp" />
     <ClCompile Include="DropZone.cpp" />
+    <ClCompile Include="FIX.cpp" />
     <ClCompile Include="GameData.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="ISkill.cpp" />
     <ClCompile Include="JsonReader.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MasterData.cpp" />
@@ -130,6 +133,7 @@
     <ClCompile Include="PlayerCharacterView.cpp" />
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="SkillCatalog.cpp" />
+    <ClCompile Include="SkillContainer.cpp" />
     <ClCompile Include="SkillGrantService.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -345,7 +349,10 @@
     <ClInclude Include="BattleScene.h" />
     <ClInclude Include="BehaviorInfoView.h" />
     <ClInclude Include="BossCharacterView.h" />
+    <ClInclude Include="BruteForce.h" />
     <ClInclude Include="DropZone.h" />
+    <ClInclude Include="FIX.h" />
+    <ClInclude Include="ISkill.h" />
     <ClInclude Include="JsonReader.h" />
     <ClInclude Include="ObtainedSkills.h" />
     <ClInclude Include="PlayerCharacterView.h" />
@@ -357,8 +364,11 @@
     <ClInclude Include="RankColor.h" />
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="SkillCatalog.h" />
+    <ClInclude Include="SkillContainer.h" />
+    <ClInclude Include="SkillEnums.h" />
     <ClInclude Include="SkillFileIO.h" />
     <ClInclude Include="SkillGrantService.h" />
+    <ClInclude Include="StatAlias.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="TrainingScene.h" />

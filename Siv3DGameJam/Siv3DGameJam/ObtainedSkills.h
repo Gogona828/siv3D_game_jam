@@ -19,4 +19,3 @@ public:
 private:
 	HashTable<String, SkillRow> rows;
 };
-

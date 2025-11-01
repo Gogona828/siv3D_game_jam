@@ -17,7 +17,8 @@ enum class StatusId
 	Serviceability,	// 2:保守性
 	Integrity,		// 3:保全性
 	Security,		// 4:安全性
-	Overload		// 5:容量
+	Overload,		// 5:容量
+	Unknown
 };
 enum class CharacterType
 {

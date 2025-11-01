@@ -4,16 +4,19 @@
 # include "BehaviorInfoView.h"
 # include "BossCharacterView.h"
 # include "GameData.h"
+# include "SkillGrantService.h"
+# include "SkillContainer.h"
+# include "FIX.h"
 # include <Siv3D.hpp>
 
 using namespace s3d;
 
 BattleScene::BattleScene(const InitData& init) : IScene(init)
 {
-	cpDropZone.configZone(0, { U"json" });
-	cpDropZone.configZone(1, { U"json" });
-	cpDropZone.configZone(2, { U"json" });
-	cpDropZone.configZone(3, { U"json" });
+	cpDropZone.configZone(0, { U"atk", U"def", U"heal", U"buff", U"pdf"});
+	cpDropZone.configZone(1, { U"atk", U"def", U"heal", U"buff", U"pdf" });
+	cpDropZone.configZone(2, { U"atk", U"def", U"heal", U"buff", U"pdf" });
+	cpDropZone.configZone(3, { U"atk", U"def", U"heal", U"buff", U"pdf" });
 
 	GameData& gameData = GameData::getInstance();
 	gameData.rebuildPlayerInfo();
@@ -22,6 +25,8 @@ BattleScene::BattleScene(const InitData& init) : IScene(init)
 	// 元画像読み込み
 	glitchImage = Image(U"assets/maingame/battle/glitch.png");
 	glitchTexture = Texture(glitchImage);
+
+	currentBattleState = BattleState::Boot;
 }
 
 void BattleScene::update()
@@ -42,6 +47,61 @@ void BattleScene::update()
 	//グリッチノイズ用---------------------------------------------
 #pragma endregion
 
+	switch (currentBattleState)
+	{
+		case BattleState::Boot:
+			// Init処理、あるなら
+			// デバッグ用
+			// SkillGrantService::getInstance().resetSkillFolder();
+			// SkillGrantService::getInstance().grantByKey(U"FIX.atk");
+			currentBattleState = BattleState::BoxReset;
+			break;
+
+		case BattleState::BoxReset:
+			cpDropZone.resetAllSlots();
+			for (int i = 0; i < 4; i++)
+			{
+				cpDropZone.setDropBoxTexture(i, defaultPath);
+			}
+
+			currentBattleState = BattleState::EnemyActArrangement;
+			break;
+
+		case BattleState::EnemyActArrangement:
+			{
+				int n = Random(0, 5);
+				for (int i = 0; i < 2; i++)
+				{
+					cpDropZone.setDropBoxTexture(BossActionPattern[n][i], bossBackPath, bossFrontPath);
+					cpDropZone.assignSlot(BossActionPattern[n][i], U"assets.pdf", false);
+					// TODO: 行動登録
+					SkillContainer::getInstance().registerSkill(U"FIX.atk");
+				}
+			}
+
+			currentBattleState = BattleState::WaitAlign;
+			break;
+
+		case BattleState::WaitAlign:
+			if (cpDropZone.allComplete())
+			{
+				currentBattleState = BattleState::SequentialProcess;
+			}
+			break;
+		case BattleState::SequentialProcess:
+			for (int i = 0; i < 4; i++)
+			{
+				// TODO: 行動
+			}
+			currentBattleState = BattleState::BoxReset;
+			currentBattleState = BattleState::GameClear;
+			currentBattleState = BattleState::GameOver;
+			break;
+		case BattleState::GameOver:
+			break;
+		case BattleState::GameClear:
+			break;
+	}
 }
 
 void BattleScene::draw() const
@@ -84,7 +144,7 @@ void BattleScene::draw() const
 
 	cpBossCharacterView.draw();
 	RectF(Arg::bottomCenter(Scene::Width()/2, Scene::Height()), Scene::Width(), 200).draw(ColorF{ 0, 0, 0, 0.4 });
-	cpDropZone.draw();
 	cpPlayerCharacterView.draw();
+	cpDropZone.draw();
 	cpBehaviorInfoView.draw();
 }
