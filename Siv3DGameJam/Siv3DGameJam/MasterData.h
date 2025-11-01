@@ -11,9 +11,9 @@ public:
 	static String getSkillName(int skillId)
 	{
 		const HashTable<int, String> skillNames = {
-			{ 1, U"攻撃" },
-			{ 2, U"二回攻撃" },
-			{ 3, U"最強攻撃" },
+			{ 1, U"FIX.atk" },
+			{ 2, U"ブルートフォース.atk" },
+			{ 3, U"ゼロデイ.atk" },
 		};
 		if (skillNames.contains(skillId))
 		{
@@ -33,6 +33,9 @@ public:
 			{ 3, U"assets/maingame/chara_image/serviceability_normal.png" },
 			{ 4, U"assets/maingame/chara_image/integrity_normal.png" },
 			{ 5, U"assets/maingame/chara_image/security_normal.png" },
+			{100,U"assets/maingame/event_image/skill_atk.png"},
+			{101,U"assets/maingame/event_image/skill_buff.png"},
+			{102,U"assets/maingame/event_image/skill_def.png"}
 		};
 		if (texturePaths.contains(textureId))
 		{
@@ -52,6 +55,9 @@ public:
 			{ U"serviceability", 3 },
 			{ U"integrity", 4 },
 			{ U"security", 5 },
+			{ U"atk",100},
+			{ U"buff",101 },
+			{ U"def",102 },
 		};
 		if (textureIds.contains(key))
 		{

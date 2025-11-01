@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "ClickEffect.h"
 # include "AudioManager.h"
+# include "MasterData.h"
 
 enum class TrainingState
 {
@@ -149,18 +150,23 @@ private:
 class GetItemViewUnit
 {
 public:
-	GetItemViewUnit(String name, Texture texture)
-		:m_name(name), m_texture(texture) {
+	GetItemViewUnit(int id)
+		:eventId(id){
+		String eventFileName = MasterData::getSkillName(eventId);
+		String right = eventFileName.split(U'.').back();
+		m_texture = Texture(MasterData::getTexturePath(MasterData::getTextureId(right)));
+		m_name = MasterData::getSkillName(eventId);
 	}
 private:
+	int eventId;
 	String m_name;
 	Texture m_texture;
 	const Font font{ FontMethod::MSDF, 48 };
 public:
 	void draw(Vec2 pos) const
 	{
-		m_texture.draw(pos);
-		font(m_name).draw(pos + Vec2{ m_texture.width() + 10, m_texture.height() / 2 - 10 });
+		m_texture.resized(75).draw(pos);
+		font(m_name).draw(18,pos + Vec2{ 75 + 10, 75 / 2 - 10});
 	}
 };
 

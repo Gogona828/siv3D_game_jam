@@ -5,6 +5,7 @@
 # include <Siv3D.hpp>
 #include "Common.h"
 #include "JsonReader.h"
+#include "SkillGrantService.h"
 
 TrainingScene::TrainingScene(const InitData& init)
 	: IScene{ init } // SceneManager対応の初期化
@@ -266,8 +267,15 @@ void TrainingScene::update()
 			}
 			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount);
 			GameData::getInstance().eventList.append(eventIdArray);
-			//TODO:ファイル取得情報を描画用リストにセットする
-
+			getItemUnits.clear();
+			for (auto i : GameData::getInstance().eventList)
+			{
+				getItemUnits.push_back(GetItemViewUnit(i));
+			}
+			for (auto i : eventIdArray)
+			{
+				SkillGrantService::getInstance().grantByKey(MasterData::getSkillName(i));
+			}
 			if (nowEventType == EventType::None)
 			{
 				// カットイン関連フラグをリセット
@@ -511,7 +519,12 @@ void TrainingScene::draw() const
 		RectF getSkillTitleBackground{ s3d::Vec2{ 560, 38 }, 250, 50 };
 		getSkillTitleBackground.draw(ColorF{1,1,1,0.5});
 		font(U"入手物").draw(TextStyle::Outline(0.2, s3d::Palette::Yellow), 28, Vec2{ 640, 43 }, ColorF{ 1.0 });
-		font(U"クリックで閉じる").draw(18, Vec2{ 375, 420 }, Palette::White);
+		font(U"クリックで閉じる").draw(18, Vec2{ 375, 460 }, Palette::White);
+
+		for(int i = 0; i < getItemUnits.size(); i++)
+		{
+			getItemUnits[i].draw(Vec2{ 570, 100 + i * 70 });
+		}
 	}
 	//ファイルドロップアニメ用------------------------------------
 	for (const auto& anim : dropAnims)
