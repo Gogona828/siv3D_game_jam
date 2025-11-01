@@ -5,5 +5,5 @@
   "DownStatusValueMultiply": [100,100,100,100,100],
   "EventFireProbability": [100],
   "EventCountProbability" : [10,20,40,50],
-  "EventProbability": [25,25,25,25]
+  "EventProbability": [25,25,25]
 }
