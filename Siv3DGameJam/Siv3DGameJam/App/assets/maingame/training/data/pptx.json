@@ -4,6 +4,10 @@
   "DownStatusProbability": [30, 10, 10, 10, 40],
   "DownStatusValueMultiply": [110, 110, 110, 110, 110],
   "EventFireProbability": [40],
-  "EventCountProbability": [10, 20, 40, 50],
+  "EventCountProbability": [
+    90,
+    9,
+    1
+  ],
   "EventProbability": [10, 20, 70]
 }
