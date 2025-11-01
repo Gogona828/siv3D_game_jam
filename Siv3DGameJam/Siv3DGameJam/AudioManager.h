@@ -21,6 +21,6 @@ private:
 	~AudioManager();
 
 	s3d::Audio m_currentBGM;
-	double m_bgmVolume = 0.1;
+	double m_bgmVolume = 0.5;
 	double m_seVolume = 0.5;
 };

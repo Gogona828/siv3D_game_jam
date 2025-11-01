@@ -10,6 +10,7 @@ TitleScene::TitleScene(const InitData& init)
 	m_howToButton = s3d::Texture(U"assets/btn_howto.png");
 	m_hoverFrame = s3d::Texture(U"assets/btn_hover.png");
 
+	m_clickSE = s3d::Audio(U"assets/audio/se/se_click.mp3");
 	m_decideSE = s3d::Audio(U"assets/audio/se/se_decide.mp3");
 	// BGM読み込み
 	m_bgMusic = Audio(U"assets/audio/bgm/bgm_title.mp3");
@@ -30,8 +31,10 @@ TitleScene::TitleScene(const InitData& init)
 void TitleScene::update()
 {
 	using namespace s3d;
-	if (MouseL.down())
+	if (MouseL.down()) {
+		AudioManager::Get().playSE(m_clickSE);
 		clickEffect.spawn(Cursor::PosF());
+	}
 	clickEffect.update();
 
 	constexpr double doubleClickInterval = 0.3;
@@ -97,6 +100,8 @@ void TitleScene::draw() const
 	using namespace s3d;
 	m_background.resized(Scene::Size()).draw();
 	m_logo.resized(400).drawAt(Scene::CenterF().x, 150);
+
+	m_creditFont(U"使用音源：OtoLogic様").draw(14, Vec2{ 10, 475 }, ColorF{ 1.0 });
 
 
 	// ボタン描画（リサイズ反映）

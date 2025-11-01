@@ -21,17 +21,26 @@ TrainingScene::TrainingScene(const InitData& init)
 
 	cutinTexture = Texture(U"assets/maingame/Event_image/origin_cutin.png");
 
+	m_bgMusic = Audio(U"assets/audio/bgm/bgm_training.mp3");
+	m_clickSE = s3d::Audio(U"assets/audio/se/se_click.mp3");
+
 	m_explorerPos = Vec2(770, 20);
 	m_howToPos = Vec2(770, 150);
 	m_restartPos = Vec2(770, 280);
 	// ボタンの描画倍率（0.5 = 半分サイズ）
 	m_buttonScale = 0.5;
+
+	// BGM再生（AudioManager 経由）
+	AudioManager::Get().playBGM(m_bgMusic);
 }
 
 void TrainingScene::update()
 {
-	if (MouseL.down())
+	if (MouseL.down()) {
+		AudioManager::Get().playSE(m_clickSE);
 		clickEffect.spawn(Cursor::PosF());
+	}
+
 	clickEffect.update();
 
 	if (!initialized)

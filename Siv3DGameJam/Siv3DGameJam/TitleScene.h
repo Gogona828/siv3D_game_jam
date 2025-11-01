@@ -16,6 +16,7 @@ private:
 	s3d::Texture m_startButton;
 	s3d::Texture m_howToButton;
 	s3d::Texture m_hoverFrame;
+	s3d::Audio m_clickSE;
 	s3d::Audio m_decideSE;
 	s3d::Audio m_bgMusic; // タイトルBGM用
 
@@ -32,10 +33,12 @@ private:
 	bool m_transitioning = false;
 	s3d::Stopwatch m_fadeTimer{ s3d::StartImmediately::No };
 
-	VolumeSlider m_bgmSlider{ s3d::Vec2(725, 420), 150, 10,U"BGM", 0.1 };
+	VolumeSlider m_bgmSlider{ s3d::Vec2(725, 420), 150, 10,U"BGM", 0.5 };
 	VolumeSlider m_seSlider{ s3d::Vec2(725, 460), 150, 10, U"SE", 0.5 };
 
 	ClickEffect clickEffect;
+
+	Font m_creditFont{ FontMethod::MSDF, 16 };
 
 public:
 	TitleScene(const InitData& init);  // ← コンストラクタは InitData を受け取る

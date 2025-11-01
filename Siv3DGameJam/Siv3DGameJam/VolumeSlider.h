@@ -6,7 +6,7 @@ class VolumeSlider
 public:
 	// pos: 左上座標, width: スライダー幅, height: スライダー高さ
 	// label: 左に表示するテキスト, initialValue: 0.0~1.0
-	VolumeSlider(const s3d::Vec2& pos, double width, double height, const s3d::String& label, double initialValue = 0.2)
+	VolumeSlider(const s3d::Vec2& pos, double width, double height, const s3d::String& label, double initialValue = 0.5)
 		: m_pos(pos)
 		, m_width(width)
 		, m_height(height)

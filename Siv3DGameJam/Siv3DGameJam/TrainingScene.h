@@ -192,6 +192,8 @@ private:
 	void UpdateCutinTexture();  // 現在の進化形態に応じたカットインをロードする
 
 	s3d::Audio m_btnSE;
+	s3d::Audio m_clickSE;
+	s3d::Audio m_bgMusic;
 
 	struct DropAnim
 	{
