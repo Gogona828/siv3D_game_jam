@@ -31,10 +31,9 @@
     35
   ],
   "EventCountProbability": [
-    10,
-    20,
-    40,
-    50
+    80,
+    18,
+    2
   ],
   "EventProbability": [
     10,

@@ -271,8 +271,9 @@ void TrainingScene::update()
 				cutinStarted = false; // 次回のカットインのためにリセット
 				m_state = TrainingState::EndTraining;
 			}
-			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount);
-			GameData::getInstance().eventList.append(eventIdArray);
+			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount + 1);
+			GameData::getInstance().eventList = eventIdArray;
+			Print << eventIdArray;
 			getItemUnits.clear();
 			for (auto i : GameData::getInstance().eventList)
 			{
