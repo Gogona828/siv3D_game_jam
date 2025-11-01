@@ -1,0 +1,9 @@
+{
+  "UpStatusProbability": [15, 15, 40, 15, 15],
+  "UpStatusValueMultiply": [110, 110, 150, 110, 110],
+  "DownStatusProbability": [20, 15, 15, 20, 30],
+  "DownStatusValueMultiply": [110, 110, 110, 110, 110],
+  "EventFireProbability": [44],
+  "EventCountProbability": [10, 20, 40, 50],
+  "EventProbability": [40, 40, 20]
+}

@@ -1,9 +1,44 @@
 {
-  "UpStatusProbability": [5, 5, 5, 5, 5],
-  "UpStatusValueMultiply": [200, 200, 200, 200, 200],
-  "DownStatusProbability": [10, 10, 10, 10, 60],
-  "DownStatusValueMultiply": [120, 120, 120, 120, 120],
-  "EventFireProbability": [95],
-  "EventCountProbability" : [10,20,40,50],
-  "EventProbability": [80, 10, 5]
+  "UpStatusProbability": [
+    15,
+    15,
+    15,
+    15,
+    40
+  ],
+  "UpStatusValueMultiply": [
+    110,
+    110,
+    110,
+    110,
+    150
+  ],
+  "DownStatusProbability": [
+    10,
+    10,
+    10,
+    10,
+    60
+  ],
+  "DownStatusValueMultiply": [
+    110,
+    110,
+    110,
+    110,
+    110
+  ],
+  "EventFireProbability": [
+    44
+  ],
+  "EventCountProbability": [
+    10,
+    20,
+    40,
+    50
+  ],
+  "EventProbability": [
+    80,
+    10,
+    5
+  ]
 }
