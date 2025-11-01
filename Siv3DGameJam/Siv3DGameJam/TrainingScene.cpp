@@ -825,7 +825,6 @@ Array<int> TrainingScene::eventIdTable(EventType type,int n)
 		for (auto j : skillChoiceProbabilitysForEventType)
 		{
 			int rnd = Random(1, 100);
-			Print << U"rnd: {}, prob: {}"_fmt(rnd, baseSkillChoiceProbabilitys[j]);
 			if(rnd <= baseSkillChoiceProbabilitys[j - 1])
 			{
 				if(eventData.size() > 6)
