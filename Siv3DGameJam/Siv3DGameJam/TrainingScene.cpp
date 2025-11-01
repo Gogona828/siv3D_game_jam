@@ -499,19 +499,19 @@ void TrainingScene::draw() const
 	//outerRect.draw(s3d::Palette::Darkgray); // 背景を濃い灰色で描画
 
 	//ステータス
-	font(U"信頼性").draw(24, Vec2{ 20, 190 }, ColorF{ 1.0 });
-	font(U"可用性").draw(24, Vec2{ 20, 240 }, ColorF{ 1.0 });
-	font(U"保守性").draw(24, Vec2{ 20, 290 }, ColorF{ 1.0 });
-	font(U"保全性").draw(24, Vec2{ 20, 340 }, ColorF{ 1.0 });
-	font(U"安全性").draw(24, Vec2{ 20, 390 }, ColorF{ 1.0 });
-	font(U"容量").draw(24, Vec2{ 20, 440 }, ColorF{ 1.0 });
+	font(U"信頼性").draw(18, Vec2{ 20, 170 }, ColorF{ 1.0 });
+	font(U"可用性").draw(18, Vec2{ 20, 220 }, ColorF{ 1.0 });
+	font(U"保守性").draw(18, Vec2{ 20, 270 }, ColorF{ 1.0 });
+	font(U"保全性").draw(18, Vec2{ 20, 320 }, ColorF{ 1.0 });
+	font(U"安全性").draw(18, Vec2{ 20, 370 }, ColorF{ 1.0 });
+	font(U"容量").draw(18, Vec2{ 20, 440 }, ColorF{ 1.0 });
 
-	font(Format(GameData::getInstance().characterStatus.Reliability)).draw(24, Arg::topRight(210, 190), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Availability)).draw(24, Arg::topRight(210, 240), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Serviceability)).draw(24, Arg::topRight(210, 290), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Integrity)).draw(24, Arg::topRight(210, 340), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Security)).draw(24, Arg::topRight(210, 390), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Overload)).draw(24, Arg::topRight(210, 440), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Reliability)).draw(20, Arg::topRight(210, 170), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Availability)).draw(20, Arg::topRight(210, 220), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Serviceability)).draw(20, Arg::topRight(210, 270), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Integrity)).draw(20, Arg::topRight(210, 320), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Security)).draw(20, Arg::topRight(210, 370), ColorF{ 1.0 });
+	font(Format(GameData::getInstance().characterStatus.Overload)).draw(20, Arg::topRight(210, 440), ColorF{ 1.0 });
 
 	for (auto i : step(m_bars.size()))
 	{

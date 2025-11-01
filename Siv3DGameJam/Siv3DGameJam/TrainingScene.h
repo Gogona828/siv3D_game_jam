@@ -125,7 +125,7 @@ public:
 
 		// 中心から右に伸ばす
 		RectF filled(m_rect.x, m_rect.y, w, m_rect.h);
-		filled.draw(Palette::Skyblue);
+		filled.draw(Palette::Red);
 
 		// 枠線
 		m_rect.drawFrame(2, Palette::White);
@@ -249,14 +249,14 @@ private:
 	Array<SystemStatusAddData> statusAddData;
 
 	Array<BranchStatusBar> m_bars = {
-			{ Vec2{ 20, 220 }, 200, 20 },
-			{ Vec2{ 20, 270 }, 200, 20 },
-			{ Vec2{ 20, 320 }, 200, 20 },
-			{ Vec2{ 20, 370 }, 200, 20 },
-			{ Vec2{ 20, 420 }, 200, 20 },
+			{ Vec2{ 20, 200 }, 200, 15 },
+			{ Vec2{ 20, 250 }, 200, 15 },
+			{ Vec2{ 20, 300 }, 200, 15 },
+			{ Vec2{ 20, 350 }, 200, 15 },
+			{ Vec2{ 20, 400 }, 200, 15 },
 	};
 	Array<GetItemViewUnit> getItemUnits;
-	StatusBar overloadBar{ Vec2{ 20, 470 }, 200, 20 };
+	StatusBar overloadBar{ Vec2{ 20, 470 }, 200, 15 };
 
 	bool initialized = false;
 
