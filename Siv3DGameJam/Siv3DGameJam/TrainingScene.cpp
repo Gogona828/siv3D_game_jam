@@ -33,6 +33,9 @@ TrainingScene::TrainingScene(const InitData& init)
 
 	// BGM再生（AudioManager 経由）
 	AudioManager::Get().playBGM(m_bgMusic);
+
+	// SKillフォルダの初期化
+	SkillGrantService::getInstance().resetSkillFolder();
 }
 
 void TrainingScene::update()

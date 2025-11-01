@@ -2,6 +2,8 @@
 # include "SkillCatalog.h"
 # include "ObtainedSkills.h"
 # include "SkillFileIO.h"
+#include <filesystem>
+using namespace s3d;
 
 class SkillGrantService
 {
@@ -42,6 +44,22 @@ public:
 
 	const SkillCatalog* getCatalog() const noexcept { return catalog; }
 	ObtainedSkills* getObtained() const noexcept { return obtained; }
+
+	void resetSkillFolder()
+	{
+		const FilePath dir = U"assets/skill/";
+		const FilePath abs = FileSystem::FullPath(dir);
+
+		// まるごと消す（存在しなくてもOK）
+#if SIV3D_PLATFORM(WINDOWS)
+		std::filesystem::remove_all(Unicode::ToWstring(abs));
+#else
+		std::filesystem::remove_all(Unicode::ToUTF8(abs));
+#endif
+
+		// 作り直す
+		FileSystem::CreateDirectories(dir);
+	}
 
 	// シングルトンなのでコピーとムーブを禁止
 	SkillGrantService(const SkillGrantService&) = delete;
