@@ -6,6 +6,11 @@ DropZone::DropZone(const SizeF& zoneSize, double gap)
 	layoutHorizontalCenter(zoneSize, gap);
 }
 
+void DropZone::setDropBoxTexture(int32 num, String path)
+{
+	m_zones[num].zoneTexture = Texture(path);
+}
+
 void DropZone::layoutHorizontalCenter(const SizeF& zoneSize, double gap)
 {
 	const double totalWidth = (zoneSize.x * 4) + gap * 3;
@@ -17,6 +22,7 @@ void DropZone::layoutHorizontalCenter(const SizeF& zoneSize, double gap)
 		const double x = origin.x + i * (zoneSize.x + gap);
 		const double y = origin.y;
 		m_zones[i].rect = RectF{ x, y, zoneSize.x, zoneSize.y };
+		m_zones[i].zoneTexture = Texture(U"assets/maingame/battle/battle_druganddrop.png");
 	}
 }
 
@@ -132,7 +138,8 @@ void DropZone::draw() const
 {
 	for (const auto& zone : m_zones)
 	{
+		zone.zoneTexture.resized(zone.rect.size).draw(zone.rect.pos);
 		const double thickness = zone.mouseOver ? 4.0 : 2.5;
-		zone.rect.drawFrame(thickness);
+		//zone.rect.drawFrame(thickness);
 	}
 }
