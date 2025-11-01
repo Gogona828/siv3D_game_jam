@@ -51,7 +51,7 @@ public:
 	{
 		const Vec2 center = m_rect.center();
 		const double halfW = m_rect.w * 0.5;
-
+		m_rect.draw(ColorF{ 0.2,0.2,0.2});
 		if (m_value < 0)
 		{
 			// 左向き（赤）
@@ -75,8 +75,6 @@ public:
 		//中央分離帯
 		RectF filled(center.x - 1.0, m_rect.y - 3.0, 2, m_rect.h + 6.0);
 		filled.draw(Palette::White);
-		// 枠線
-		m_rect.drawFrame(2, Palette::White);
 	}
 	void setTarget(double value)
 	{
@@ -122,13 +120,11 @@ public:
 		// 右向き（青）
 		const double rate = Clamp(m_value, 0.0, 1.0);
 		const double w = halfW * rate;
-
+		m_rect.draw(ColorF{0.2,0.2,0.2});
 		// 中心から右に伸ばす
 		RectF filled(m_rect.x, m_rect.y, w, m_rect.h);
 		filled.draw(Palette::Red);
 
-		// 枠線
-		m_rect.drawFrame(2, Palette::White);
 	}
 	void setTarget(double value)
 	{
@@ -151,7 +147,7 @@ class GetItemViewUnit
 {
 public:
 	GetItemViewUnit(int id)
-		:eventId(id){
+		:eventId(id), font{ FontMethod::MSDF, 48 }{
 		String eventFileName = MasterData::getSkillName(eventId);
 		String right = eventFileName.split(U'.').back();
 		m_texture = Texture(MasterData::getTexturePath(MasterData::getTextureId(right)));
@@ -161,7 +157,7 @@ private:
 	int eventId;
 	String m_name;
 	Texture m_texture;
-	const Font font{ FontMethod::MSDF, 48 };
+	Font font;
 public:
 	void draw(Vec2 pos) const
 	{
@@ -249,14 +245,14 @@ private:
 	Array<SystemStatusAddData> statusAddData;
 
 	Array<BranchStatusBar> m_bars = {
-			{ Vec2{ 20, 200 }, 200, 15 },
-			{ Vec2{ 20, 250 }, 200, 15 },
-			{ Vec2{ 20, 300 }, 200, 15 },
-			{ Vec2{ 20, 350 }, 200, 15 },
-			{ Vec2{ 20, 400 }, 200, 15 },
+			{ Vec2{ 20, 190 }, 200, 15 },
+			{ Vec2{ 20, 240 }, 200, 15 },
+			{ Vec2{ 20, 290 }, 200, 15 },
+			{ Vec2{ 20, 340 }, 200, 15 },
+			{ Vec2{ 20, 390 }, 200, 15 },
 	};
 	Array<GetItemViewUnit> getItemUnits;
-	StatusBar overloadBar{ Vec2{ 20, 470 }, 200, 15 };
+	StatusBar overloadBar{ Vec2{ 20, 460 }, 200, 15 };
 
 	bool initialized = false;
 
