@@ -19,7 +19,7 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
 	eventBackGround = s3d::Texture(U"assets/maingame/event_image/event_bg.png");
 
-	cutinTexture = Texture(U"assets/maingame/Event_image/reliability_cutin.png");
+	cutinTexture = Texture(U"assets/maingame/Event_image/origin_cutin.png");
 
 	m_explorerPos = Vec2(770, 20);
 	m_howToPos = Vec2(770, 150);
@@ -325,6 +325,9 @@ void TrainingScene::update()
 			{
 				SetCharacter(U"assets/maingame/chara_image/evolution_normal.png");
 				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(7);
+
+				// ★ここでカットイン画像更新
+				UpdateCutinTexture();
 			}
 			if (!evoluted)
 			{
@@ -336,6 +339,9 @@ void TrainingScene::update()
 						SetCharacter(MasterData::getTexturePath(i + 1));
 						evoluted = true;
 						GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(i + 1);
+
+						// ★ここでカットイン画像更新
+						UpdateCutinTexture();
 						break;
 					}
 				}
@@ -352,7 +358,10 @@ void TrainingScene::update()
 			{
 				characterTextureId = 0;
 				SetCharacter(U"assets/maingame/chara_image/bug_normal.png");
-				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(7);
+				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(8);
+
+				// ★ここでカットイン画像更新
+				UpdateCutinTexture();
 			}
 		}
 		else
@@ -856,7 +865,7 @@ void TrainingScene::ChangeStatus(Array<SystemStatusAddData> data)
 					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Serviceability,
 					MasterData::maxStatusValue() - GameData::getInstance().characterStatus.Serviceability));
 			break;
-		case StatusId::Intergrity:
+		case StatusId::Integrity:
 			GameData::getInstance().characterStatus.Integrity += static_cast<int>(
 				Math::Clamp(static_cast<float>(datas.addValue),
 					MasterData::maxStatusValue() * -1 - GameData::getInstance().characterStatus.Integrity,
@@ -889,4 +898,46 @@ void TrainingScene::SetCharacter(String path)
 	//キャラクター画像の設定
 	characterImagePath = path;
 	characterTexture = Texture(characterImagePath);
+}
+
+void TrainingScene::UpdateCutinTexture()
+{
+	const auto& gameData = GameData::getInstance();
+	const CharacterType type = gameData.evolutedCharacterTextureId;
+
+	// evolutedCharacterTextureId に応じたパスを取得
+	FilePath cutinPath;
+
+	switch (type)
+	{
+	case CharacterType::Reliability:
+		cutinPath = U"assets/maingame/Event_image/reliability_cutin.png";
+		break;
+	case CharacterType::Availability:
+		cutinPath = U"assets/maingame/Event_image/availability_cutin.png";
+		break;
+	case CharacterType::Serviceability:
+		cutinPath = U"assets/maingame/Event_image/serviceability_cutin.png";
+		break;
+	case CharacterType::Integrity:
+		cutinPath = U"assets/maingame/Event_image/integrity_cutin.png";
+		break;
+	case CharacterType::Security:
+		cutinPath = U"assets/maingame/Event_image/security_cutin.png";
+		break;
+	case CharacterType::Origin:
+		cutinPath = U"assets/maingame/Event_image/origin_cutin.png";
+		break;
+	case CharacterType::Evoluted:
+		cutinPath = U"assets/maingame/Event_image/evolution_cutin.png";
+		break;
+	case CharacterType::Bug:
+		cutinPath = U"assets/maingame/Event_image/bug_cutin.png";
+		break;
+	default:
+		cutinPath = U"assets/maingame/Event_image/reliability_cutin.png";
+		break;
+	}
+
+	cutinTexture = Texture(cutinPath);
 }

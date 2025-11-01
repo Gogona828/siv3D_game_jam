@@ -174,6 +174,8 @@ private:
 	double m_lastClickTimeHowTo;
 	double m_lastClickTimeRestart;
 
+	void UpdateCutinTexture();  // 現在の進化形態に応じたカットインをロードする
+
 	s3d::Audio m_btnSE;
 
 	struct DropAnim

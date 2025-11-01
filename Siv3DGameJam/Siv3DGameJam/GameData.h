@@ -15,7 +15,7 @@ enum class StatusId
 	Reliability,	// 0:信頼性
 	Availability,	// 1:可用性
 	Serviceability,	// 2:保守性
-	Intergrity,		// 3:保全性
+	Integrity,		// 3:保全性
 	Security,		// 4:安全性
 	Overload		// 5:容量
 };
@@ -24,11 +24,12 @@ enum class CharacterType
 	Reliability,	// 0:信頼性
 	Availability,	// 1:可用性
 	Serviceability,	// 2:保守性
-	Intergrity,		// 3:保全性
+	Integrity,		// 3:保全性
 	Security,		// 4:安全性
 	Overload,		// 5:容量
-	NotEvoluted,	// 6:未進化
-	Bug				// 7:バグキャラ
+	Origin,			// 6:未進化
+	Evoluted,		// 7:一進化
+	Bug				// 8:バグキャラ
 };
 struct BossCharacterInfo
 {
