@@ -23,6 +23,8 @@ class ResultScene; // ← 追加！
 void Main()
 {
 	Window::Resize(896, 504);
+	Window::SetTitle(U"FILEuS");
+
 	s3d::FontAsset::Register(U"Title", 40);
 	s3d::FontAsset::Register(U"Game", 40);
 	s3d::FontAsset::Register(U"Battle", 40);
