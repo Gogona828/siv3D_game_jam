@@ -6,6 +6,7 @@ struct SkillRow
 	String key;
 	String name;
 	String descriptionText;
+	String mp;
 	String genre;
 	String abstructTargetEvent;
 	Array<String> columns;
@@ -18,8 +19,9 @@ public:
 	struct CsvMap {
 		size_t colName = 0;
 		size_t colDescription = 1;
-		size_t colGenre = 4;
-		size_t colAbstructTargetEvent = 5;
+		size_t colMp = 3;
+		size_t colGenre = 5;
+		size_t colAbstructTargetEvent = 6;
 	};
 
 	bool loadCSV(const FilePath& csvPath);

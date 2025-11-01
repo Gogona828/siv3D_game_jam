@@ -26,8 +26,9 @@ bool SkillCatalog::loadCSV(const FilePath& csvPath)
 
 		if (keepCols.includes(0)) skillRow.name = csv[i][0].trimmed();
 		if (keepCols.includes(1)) skillRow.descriptionText = csv[i][1].trimmed();
-		if (keepCols.includes(4)) skillRow.genre = csv[i][4].trimmed();
-		if (keepCols.includes(5)) skillRow.abstructTargetEvent = csv[i][5].trimmed();
+		if (keepCols.includes(3)) skillRow.mp = csv[i][3].trimmed();
+		if (keepCols.includes(5)) skillRow.genre = csv[i][5].trimmed();
+		if (keepCols.includes(6)) skillRow.abstructTargetEvent = csv[i][6].trimmed();
 
 		if (skillRow.name.isEmpty()) continue;
 
