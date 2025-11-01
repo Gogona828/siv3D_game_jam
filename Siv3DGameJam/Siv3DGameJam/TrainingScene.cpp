@@ -265,6 +265,12 @@ void TrainingScene::update()
 					}
 				}
 			}
+			if(nowEventType == EventType::None)
+			{
+				eventDrawing = false;
+				cutinStarted = false; // 次回のカットインのためにリセット
+				m_state = TrainingState::EndTraining;
+			}
 			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount);
 			GameData::getInstance().eventList.append(eventIdArray);
 			getItemUnits.clear();
@@ -338,7 +344,7 @@ void TrainingScene::update()
 		//	ターンを加算する
 		currentTurn++;
 		//	終了後、ターン数が最大に達していなければ次のターンへ
-		if (maxTurn - currentTurn > 0 && GameData::getInstance().characterStatus.Overload <= 100)
+		if (maxTurn - currentTurn > 0 && GameData::getInstance().characterStatus.Overload < 100)
 		{
 			m_state = TrainingState::CanInputFile;
 			if (currentTurn == 3 && !evoluted)
@@ -577,6 +583,8 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 	//ステータス変動は「変動基本値 + Random（０－５の範囲）を加算」「（変動基本値/3）＋ Random(0-5)を減算」「容量(GB) + Random(0-10)を加算（Zipを除く）」の３つ
 	String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
 	Array<int> upStatusProbability;
+
+	bool missLoad = false;
 	if (JsonReader::readData(jsonPath, U"UpStatusProbability", upStatusProbability))
 	{
 		int allWeight = 0;
@@ -607,6 +615,10 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 				break;
 			}
 		}
+	}
+	else
+	{
+		missLoad = true;
 	}
 	Array<int> downStatusProbability;
 	if(JsonReader::readData(jsonPath, U"DownStatusProbability", downStatusProbability))
@@ -640,6 +652,10 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 			}
 		}
 	}
+	else
+	{
+		missLoad = true;
+	}
 	if (fileExtension == U"zip")
 	{
 		SystemStatusAddData overloadStatusData;
@@ -649,9 +665,16 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 	}
 	else
 	{
+		SystemStatusAddData overloadStatusData;
+		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
+		overloadStatusData.addValue = Math::Abs(size / (1024 * 1024 * 1024) + Random(3, 6) * 3.5);
+		statusAddData.push_back(overloadStatusData);
+	}
+	if(missLoad)
+	{
 		//該当がない場合はランダムでステータス変動
 		SystemStatusAddData upStatusData;
-		upStatusData.addId = Random(0,4);
+		upStatusData.addId = Random(0, 4);
 		upStatusData.addValue = param + Random(0, 5);
 		statusAddData.push_back(upStatusData);
 		SystemStatusAddData downStatusData;
@@ -817,7 +840,6 @@ Array<int> TrainingScene::eventIdTable(EventType type,int n)
 			}
 			break;
 		default:
-			Print << U"データ取得に失敗しました。イベント抽選を中止します。";
 			return eventData;
 			break;
 		}

@@ -57,7 +57,8 @@ public:
 			{ 5, U"assets/maingame/chara_image/security_normal.png" },
 			{100,U"assets/maingame/event_image/skill_atk.png"},
 			{101,U"assets/maingame/event_image/skill_buff.png"},
-			{102,U"assets/maingame/event_image/skill_def.png"}
+			{102,U"assets/maingame/event_image/skill_def.png"},
+			{103,U"assets/maingame/event_image/skill_heal.png" }
 		};
 		if (texturePaths.contains(textureId))
 		{
@@ -80,6 +81,7 @@ public:
 			{ U"atk",100},
 			{ U"buff",101 },
 			{ U"def",102 },
+			{ U"heal",103}
 		};
 		if (textureIds.contains(key))
 		{
