@@ -15,6 +15,10 @@ class ResultScene; // ← 追加！
 # include "BattleScene.h"
 # include "ResultScene.h" // ← 追加！
 # include "JsonReader.h"
+# include "SkillGrantService.h"
+# include "SkillCatalog.h"
+# include "ObtainedSkills.h"
+
 
 void Main()
 {
@@ -30,6 +34,12 @@ void Main()
 	app.add<BattleScene>(U"Battle");
 	app.add<ResultScene>(U"Result"); // ← 追加！
 	app.init(U"Title");
+
+	static SkillCatalog catalog;
+	catalog.loadCSV(U"assets/data/AllSkillData.csv");
+	static ObtainedSkills obtained;
+	SkillGrantService& skillAPI = SkillGrantService::getInstance();
+	skillAPI.configure(&catalog, &obtained);
 
 	const Font font{ FontMethod::MSDF, 48 };
 

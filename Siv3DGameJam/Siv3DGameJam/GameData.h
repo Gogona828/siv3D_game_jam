@@ -102,7 +102,7 @@ public:
 
 	inline int32 Remap(int32 x, double min, double max, bool isClamp = false)
 	{
-		double t = (x - -100) / (100 - -100);
+		double t = (double)(x - -100) / (double)(100 - -100);
 		if (isClamp)
 		{
 			t = Clamp(t, 0.0, 1.0);
