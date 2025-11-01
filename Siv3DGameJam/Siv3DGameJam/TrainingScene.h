@@ -146,8 +146,23 @@ private:
 	bool m_animating = false;
 };
 
-
-
+class GetItemViewUnit
+{
+public:
+	GetItemUnit(String name, Texture texture)
+		:m_name(name), m_texture(texture) {
+	}
+private:
+	String m_name;
+	Texture m_texture;
+	const Font font{ FontMethod::MSDF, 48 };
+public:
+	void draw(Vec2 pos) const
+	{
+		m_texture.draw(pos);
+		font(m_name).draw(pos + Vec2{ m_texture.width() + 10, m_texture.height() / 2 - 10 });
+	}
+};
 
 class TrainingScene : public App::Scene
 {
@@ -232,6 +247,7 @@ private:
 			{ Vec2{ 20, 340 }, 200, 20 },
 			{ Vec2{ 20, 380 }, 200, 20 },
 	};
+	Array<GetItemViewUnit> getItemUnits;
 	StatusBar overloadBar{ Vec2{ 20, 440 }, 200, 20 };
 
 	bool initialized = false;

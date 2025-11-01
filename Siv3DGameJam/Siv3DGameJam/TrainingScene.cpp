@@ -238,6 +238,8 @@ void TrainingScene::update()
 			//抽選確率をJsonから取得
 			int eventCount = 1;
 			Array<int> eventProbabilities;
+
+			// イベント発生数の抽選確率をJsonから取得
 			String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
 			if (JsonReader::readData(jsonPath, U"EventCountProbability", eventProbabilities))
 			{
@@ -255,6 +257,7 @@ void TrainingScene::update()
 			}
 			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount);
 			GameData::getInstance().eventList.append(eventIdArray);
+			//TODO:ファイル取得情報を描画用リストにセットする
 
 			if (nowEventType == EventType::None)
 			{
