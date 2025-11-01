@@ -9,10 +9,11 @@ public:
 		RectF rect;
 		Array<String> allowExts;
 		Optional<FilePath> slotPath;
+		Texture zoneTexture;
 		bool mouseOver = false;
 	};
 
-	DropZone(const SizeF& zoneSize = SizeF{ 130, 100 }, double gap = 30.0);
+	DropZone(const SizeF& zoneSize = SizeF{ Vec2{ 322, 245 } / 2.2 }, double gap = 15.0);
 
 	void configZone(size_t i, const Array<String>& allowExts = {});
 	void update();
@@ -33,6 +34,8 @@ public:
 	{
 		return m_zones[i];
 	}
+
+	void setDropBoxTexture(int32 num, String path);
 
 private:
 	std::array<Zone, 4> m_zones;

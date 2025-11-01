@@ -28,6 +28,7 @@ void BattleScene::update()
 {
 	cpDropZone.update();
 
+#pragma region Glitch
 	//グリッチノイズ用---------------------------------------------
 	// UVスクロール速度（右に0.5px、下に0.2px/フレーム）
 	uvOffset.x += 1.0;
@@ -39,10 +40,13 @@ void BattleScene::update()
 	uvOffset.x = std::fmod(uvOffset.x, static_cast<double>(w));
 	uvOffset.y = std::fmod(uvOffset.y, static_cast<double>(h));
 	//グリッチノイズ用---------------------------------------------
+#pragma endregion
+
 }
 
 void BattleScene::draw() const
 {
+#pragma region Draw Background
 	//グリッチノイズ用---------------------------------------------
 	const int blockSize = 5; // スライスの高さ
 	const int w = glitchTexture.width();
@@ -76,7 +80,7 @@ void BattleScene::draw() const
 		}
 	}
 	//グリッチノイズ用---------------------------------------------
-
+#pragma endregion
 
 	cpBossCharacterView.draw();
 	RectF(Arg::bottomCenter(Scene::Width()/2, Scene::Height()), Scene::Width(), 200).draw(ColorF{ 0, 0, 0, 0.4 });
