@@ -772,95 +772,69 @@ EventType TrainingScene::eventTypeTable()
 Array<int> TrainingScene::eventIdTable(EventType type,int n)
 {
 	Array<int> eventData;
+	String baseSkillChoiceProbabilityJsonPath = U"assets/maingame/training/probabilityData/BaseChoiceSkillProbability.json";
+	String SkillChoiceProbabilityForEventTypeJsonPath = U"assets/maingame/training/probabilityData/SkillChoiceProbabilityForEventType.json";
+	Array<int> baseSkillChoiceProbabilitys;
+	Array<int> skillChoiceProbabilitysForEventType;
+	//テーブルデータがそろわない場合はFastReturn
+	if (!JsonReader::readData(baseSkillChoiceProbabilityJsonPath, U"BaseChoiceSkillProbability", baseSkillChoiceProbabilitys))
+	{
+		Print << U"データ取得に失敗しました。イベント抽選を中止します。1";
+		return eventData;
+	}
+
+	//n回分のイベントIDを抽選
 	for(int i = 0; i < n; i++)
 	{
-		int rnd = Random(1, 100);
 		switch (type)
 		{
 		case EventType::Attack:
-			if (rnd < 40)
+			if(!JsonReader::readData(SkillChoiceProbabilityForEventTypeJsonPath, U"Attack", skillChoiceProbabilitysForEventType))
 			{
-				eventData.push_back(1);
-				break;
+				Print << U"データ取得に失敗しました。イベント抽選を中止します。2";
+				return eventData;
 			}
-			if (rnd < 50)
-			{
-				eventData.push_back(1);
-			}
-			else if(rnd < 80)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 96)
-			{
-				eventData.push_back(2);
-			}
-
 			break;
 		case EventType::Heal:
-			if (rnd < 40)
+			if (!JsonReader::readData(SkillChoiceProbabilityForEventTypeJsonPath, U"Heal", skillChoiceProbabilitysForEventType))
 			{
-				eventData.push_back(1);
-				break;
-			}
-			if (rnd < 50)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 80)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 96)
-			{
-				eventData.push_back(2);
+				Print << U"データ取得に失敗しました。イベント抽選を中止します。3";
+				return eventData;
 			}
 			break;
 		case EventType::Buff:
-			if (rnd < 40)
+			if (!JsonReader::readData(SkillChoiceProbabilityForEventTypeJsonPath, U"Buff", skillChoiceProbabilitysForEventType))
 			{
-				eventData.push_back(1);
-				break;
-			}
-			if (rnd < 50)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 80)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 96)
-			{
-				eventData.push_back(2);
+				Print << U"データ取得に失敗しました。イベント抽選を中止します。4";
+				return eventData;
 			}
 			break;
 		case EventType::Debuff:
-			if (rnd < 40)
+			if (!JsonReader::readData(SkillChoiceProbabilityForEventTypeJsonPath, U"Debuff", skillChoiceProbabilitysForEventType))
 			{
-				eventData.push_back(1);
-				break;
+				Print << U"データ取得に失敗しました。イベント抽選を中止します。";
+				return eventData;
 			}
-			if (rnd < 50)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 80)
-			{
-				eventData.push_back(1);
-			}
-			else if (rnd < 96)
-			{
-				eventData.push_back(2);
-			}
-			break;
-
-
-
-		case EventType::None:
 			break;
 		default:
+			Print << U"データ取得に失敗しました。イベント抽選を中止します。";
+			return eventData;
 			break;
+		}
+
+		for (auto j : skillChoiceProbabilitysForEventType)
+		{
+			int rnd = Random(1, 100);
+			Print << U"rnd: {}, prob: {}"_fmt(rnd, baseSkillChoiceProbabilitys[j]);
+			if(rnd <= baseSkillChoiceProbabilitys[j - 1])
+			{
+				if(eventData.size() > 6)
+				{
+					//イベントが多すぎる場合は打ち切り
+					return eventData;
+				}
+				eventData.push_back(j);
+			}
 		}
 	}
 

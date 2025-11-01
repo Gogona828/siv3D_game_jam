@@ -14,6 +14,31 @@ public:
 			{ 1, U"FIX.atk" },
 			{ 2, U"ブルートフォース.atk" },
 			{ 3, U"ゼロデイ.atk" },
+			{ 4, U"インジェクション.atk" },
+			{ 5, U"キル.atk" },
+			{ 6, U"デプロイ.atk" },
+			{ 7, U"論理爆弾.atk" },
+			{ 8, U"チェックサム.atk" },
+			{ 9, U"ファイアウォール.atk" },
+			{ 10, U"デフラグ.atk" },
+			{ 11, U"ガベージコレクション.atk" },
+			{ 12, U"ロールバック.atk" },
+			{ 13, U"自己修復.atk" },
+			{ 14, U"ハニーポット.atk" },
+			{ 15, U"ゼロトラスト.atk" },
+			{ 16, U"ルートキット.atk" },
+			{ 17, U"バックドア.atk" },
+			{ 18, U"MFA.atk" },
+			{ 19, U"リファクタリング.atk" },
+			{ 20, U"クリティカルチェーン.atk" },
+			{ 21, U"シルバーバレット.atk" },
+			{ 22, U"レインボー攻撃.atk" },
+			{ 23, U"オーバークロック.atk" },
+			{ 24, U"スカイスクレイパー.atk" },
+			{ 25, U"HelloWorld.atk" },
+			{ 26, U"RAID 5.atk" },
+			{ 27, U"スプリットホライズン.atk" },
+			{ 28, U"リバイズ.atk" },
 		};
 		if (skillNames.contains(skillId))
 		{
@@ -24,6 +49,7 @@ public:
 			return U"不明なスキル";
 		}
 	}
+
 	// テクスチャIDからパスを取得
 	static String getTexturePath(int textureId)
 	{
