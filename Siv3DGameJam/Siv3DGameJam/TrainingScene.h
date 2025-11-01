@@ -149,7 +149,7 @@ private:
 class GetItemViewUnit
 {
 public:
-	GetItemUnit(String name, Texture texture)
+	GetItemViewUnit(String name, Texture texture)
 		:m_name(name), m_texture(texture) {
 	}
 private:
