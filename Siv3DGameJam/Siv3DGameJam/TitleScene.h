@@ -18,6 +18,8 @@ private:
 	s3d::Texture m_hoverFrame;
 	s3d::Audio m_clickSE;
 	s3d::Audio m_decideSE;
+
+
 	s3d::Audio m_bgMusic; // タイトルBGM用
 
 	s3d::String m_hovered;

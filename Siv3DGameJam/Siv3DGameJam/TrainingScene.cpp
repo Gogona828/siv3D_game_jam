@@ -24,6 +24,9 @@ TrainingScene::TrainingScene(const InitData& init)
 
 	m_bgMusic = Audio(U"assets/audio/bgm/bgm_training.mp3");
 	m_clickSE = s3d::Audio(U"assets/audio/se/se_click.mp3");
+	m_eatSE = s3d::Audio(U"assets/audio/se/se_eat.mp3");
+	m_cutinSE = s3d::Audio(U"assets/audio/se/se_cutin.mp3");
+	m_growSE = s3d::Audio(U"assets/audio/se/se_grow.mp3");
 
 	m_explorerPos = Vec2(770, 20);
 	m_howToPos = Vec2(770, 150);
@@ -176,6 +179,8 @@ void TrainingScene::update()
 		{
 			if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
 			{
+				AudioManager::Get().playSE(m_eatSE);
+
 				droppedFile = files.front();
 				fileExtension = FileSystem::Extension(droppedFile.path);
 				hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
@@ -235,12 +240,14 @@ void TrainingScene::update()
 		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security		/ MasterData::maxStatusValue());
 		overloadBar.setTarget(GameData::getInstance().characterStatus.Overload		/ MasterData::maxStatusValue());
 		m_state = TrainingState::AfterEvent;
+		AudioManager::Get().playSE(m_growSE);
 		break;
 	case TrainingState::AfterEvent:
 	{
 		// カットイン開始前の処理
 		if (!cutinStarted && !m_characterAnimPlaying)
 		{
+
 			cutinStarted = true;     // 二重再生防止
 			cutinPlaying = true;     // カットイン再生フラグON
 			cutinTimer = 0.0;        // タイマーリセット
@@ -263,6 +270,7 @@ void TrainingScene::update()
 					currentProb += eventProbabilities[i];
 					if (rand <= currentProb)
 					{
+
 						eventCount = static_cast<int>(i);
 						break;
 					}
@@ -273,6 +281,11 @@ void TrainingScene::update()
 				eventDrawing = false;
 				cutinStarted = false; // 次回のカットインのためにリセット
 				m_state = TrainingState::EndTraining;
+			}
+			// イベントタイプが None でなければ、ここでSEを鳴らす
+			else if (nowEventType != EventType::None)
+			{
+				AudioManager::Get().playSE(m_cutinSE);
 			}
 			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount + 1);
 			GameData::getInstance().eventList = eventIdArray;
@@ -440,7 +453,7 @@ void TrainingScene::draw() const
 {
 	m_background.resized(Scene::Size()).draw();
 	m_dropshadow.resized(350).drawAt(Scene::CenterF().x, Scene::CenterF().y+200);
-	m_training_guide.resized(500).draw(260,  20);
+	m_training_guide.resized(500).draw(260,  22);
 
 
 	//m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
@@ -463,7 +476,7 @@ void TrainingScene::draw() const
 	}
 
 	// 描画位置（画面中央下70pxに配置）
-	Vec2 drawPos = Vec2{ Scene::CenterF().x, Scene::Height() +60 };
+	Vec2 drawPos = Vec2{ Scene::CenterF().x, Scene::Height() +10 };
 
 	// テクスチャサイズ（scale込み）
 	Vec2 scaledSize = Vec2{ characterTexture.width() * scale, characterTexture.height() * scale };
@@ -498,7 +511,7 @@ void TrainingScene::draw() const
 	//左にステータスを表示
 	//s3d::RectF outerRect{ barPos, barMaxWidth, barHeight };
 	//outerRect.draw(s3d::Palette::Darkgray); // 背景を濃い灰色で描画
-	s3d::RectF statusBackground{ s3d::Vec2{5,150}, 230, 345 };
+	s3d::RectF statusBackground{ s3d::Vec2{5,150}, 230, 340 };
 	statusBackground.draw(ColorF(0.0,0.0,0.0,0.6));
 	//ステータス
 	font(U"信頼性").draw(18, Vec2{ 20, 160 }, ColorF{ 1.0 });

@@ -13,6 +13,12 @@ using namespace s3d;
 
 BattleScene::BattleScene(const InitData& init) : IScene(init)
 {
+	m_bgMusic = Audio(U"assets/audio/bgm/bgm_battle.mp3");
+	m_clickSE = s3d::Audio(U"assets/audio/se/se_click.mp3");
+
+	// BGM再生（AudioManager 経由）
+	AudioManager::Get().playBGM(m_bgMusic);
+
 	cpDropZone.configZone(0, { U"atk", U"def", U"heal", U"buff", U"pdf"});
 	cpDropZone.configZone(1, { U"atk", U"def", U"heal", U"buff", U"pdf" });
 	cpDropZone.configZone(2, { U"atk", U"def", U"heal", U"buff", U"pdf" });
@@ -31,6 +37,12 @@ BattleScene::BattleScene(const InitData& init) : IScene(init)
 
 void BattleScene::update()
 {
+	if (MouseL.down()) {
+		AudioManager::Get().playSE(m_clickSE);
+		clickEffect.spawn(Cursor::PosF());
+	}
+	clickEffect.update();
+
 	cpDropZone.update();
 
 #pragma region Glitch
@@ -147,4 +159,6 @@ void BattleScene::draw() const
 	cpPlayerCharacterView.draw();
 	cpDropZone.draw();
 	cpBehaviorInfoView.draw();
+
+	clickEffect.draw();    // クリックエフェクト描画
 }

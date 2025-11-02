@@ -195,6 +195,11 @@ private:
 
 	s3d::Audio m_btnSE;
 	s3d::Audio m_clickSE;
+
+	s3d::Audio m_eatSE;
+	s3d::Audio m_growSE;
+	s3d::Audio m_cutinSE;
+
 	s3d::Audio m_bgMusic;
 
 	struct DropAnim

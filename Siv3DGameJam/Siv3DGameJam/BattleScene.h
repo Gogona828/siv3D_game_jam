@@ -9,6 +9,7 @@
 # include "PlayerCharacterView.h"
 # include "BehaviorInfoView.h"
 # include "BossCharacterView.h"
+#include "ClickEffect.h"
 
 enum class BattleState
 {
@@ -24,6 +25,13 @@ enum class BattleState
 class BattleScene : public App::Scene
 {
 private:
+	//追加---
+	s3d::Audio m_clickSE;
+	s3d::Audio m_bgMusic; // タイトルBGM用
+
+	ClickEffect clickEffect;
+	//追加---
+
 	const Font font{ FontMethod::MSDF, 48 };
 
 	DropZone cpDropZone;
