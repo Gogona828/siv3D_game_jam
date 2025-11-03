@@ -9,6 +9,7 @@ enum class TrainingState
 {
 	CanInputFile,
 	Event,
+	AnimatingStatus, // ★ この状態を追加
 	AfterEvent,
 	EndTraining
 };
@@ -83,6 +84,11 @@ public:
 		m_timer = 0.0;
 		m_animating = true;
 	}
+	// ★ この関数を追加
+	RectF rect() const
+	{
+		return m_rect;
+	}
 
 private:
 	RectF m_rect;
@@ -132,6 +138,11 @@ public:
 		m_targetValue = Clamp(value, 0.0, 1.0);
 		m_timer = 0.0;
 		m_animating = true;
+	}
+	// ★ この関数を追加
+	RectF rect() const
+	{
+		return m_rect;
 	}
 
 private:
@@ -289,6 +300,13 @@ private:
 	}
 
 	int32 characterTextureId = 0;
+
+	// ★ 追加: ステータスアニメーション用
+	Array<double> m_animatedStatusValues; // アニメーション中の中間値 (6個)
+	Array<double> m_targetStatusValues;   // アニメーションの目標値 (6個)
+	Array<int> m_statusChanges;           // 今回の変化量 (色分け用)
+	Stopwatch m_statusAnimTimer;          // アニメーション用タイマー
+	const double m_statusAnimDuration = 0.5; // アニメーションの長さ (0.5秒)
 
 	// ファイルスキャンモードの状態
 	enum class FileScanMode

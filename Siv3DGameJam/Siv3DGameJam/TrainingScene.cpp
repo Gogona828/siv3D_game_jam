@@ -45,6 +45,21 @@ TrainingScene::TrainingScene(const InitData& init)
 	// SKillフォルダの初期化
 	SkillGrantService::getInstance().resetSkillFolder();
 
+	// ★ 追加: アニメーション用配列の初期化
+	m_animatedStatusValues.resize(6);
+	m_targetStatusValues.resize(6);
+	m_statusChanges.resize(6, 0);
+
+	// 現在のGameDataの値で初期化
+	const auto& status = GameData::getInstance().characterStatus.toArray();
+	for (auto i : step(status.size()))
+	{
+		m_animatedStatusValues[i] = status[i];
+		m_targetStatusValues[i] = status[i];
+	}
+	m_animatedStatusValues[5] = GameData::getInstance().characterStatus.Overload;
+	m_targetStatusValues[5] = GameData::getInstance().characterStatus.Overload;
+
 	// ★ 追加: バツボタンの初期化
 	m_closeButtonRect = RectF(Scene::Width() - 50, 10, 40, 40);
 
@@ -210,6 +225,7 @@ void TrainingScene::update()
 		switch (m_state)
 		{
 		case TrainingState::CanInputFile:
+		{
 			// ファイル入力ができる状態
 			if (DragDrop::HasNewFilePaths())
 			{
@@ -252,7 +268,9 @@ void TrainingScene::update()
 				}
 			}
 			break;
+		}
 		case TrainingState::Event:
+		{
 			//もし重複ファイルが入力されていたら弾く
 			if (filePathList.contains(droppedFile.path))
 			{
@@ -265,19 +283,67 @@ void TrainingScene::update()
 				//重複していなければリストに追加
 				filePathList.push_back(droppedFile.path);
 			}
-			//ファイル入力が完了した状態
+			// 1. これから変動する値を計算
 			statusAddData = statusTable();
+
+			// 2. アニメーション用の変数を設定
+			m_statusChanges.fill(0); // 変化量リセット
+			for (const auto& data : statusAddData)
+			{
+				m_statusChanges[data.addId] = data.addValue;
+			}
+
+			// 3. GameDataを即座に更新 (ChangeStatusがclampを行うため)
 			ChangeStatus(statusAddData);
-			// ステータスの変動を行う
+
+			// 4. アニメーションの「開始値」と「目標値」を再設定
+			const auto& statusArray = GameData::getInstance().characterStatus.toArray();
+			for (auto i : step(statusArray.size())) // 0-4
+			{
+				m_targetStatusValues[i] = statusArray[i]; // 目標値 (GameDataの最新値)
+				m_animatedStatusValues[i] = m_targetStatusValues[i] - m_statusChanges[i]; // 開始値 (目標値 - 変化量)
+			}
+			// Overload (index 5)
+			m_targetStatusValues[5] = GameData::getInstance().characterStatus.Overload;
+			m_animatedStatusValues[5] = m_targetStatusValues[5] - m_statusChanges[5];
+
+
+			// 5. ゲージのターゲットを設定 (これは既存のままでOK)
 			m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / MasterData::maxStatusValue());
 			m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / MasterData::maxStatusValue());
 			m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / MasterData::maxStatusValue());
 			m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / MasterData::maxStatusValue());
 			m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / MasterData::maxStatusValue());
 			overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / MasterData::maxStatusValue());
-			m_state = TrainingState::AfterEvent;
+
+			// 6. アニメーション開始
+			m_statusAnimTimer.restart();
+			m_state = TrainingState::AnimatingStatus; // ★ 新しい状態に移行
 			AudioManager::Get().playSE(m_growSE);
 			break;
+		}
+			// ★ 追加: ステータスアニメーションを再生する状態
+		case TrainingState::AnimatingStatus:
+		{
+			// 0.0 (開始) から 1.0 (終了) までの進捗
+			const double t = Min(m_statusAnimTimer.sF() / m_statusAnimDuration, 1.0);
+			const double easeT = EaseOutCubic(t); // イージングを適用
+
+			// 中間値を計算 (Lerp: 線形補間)
+			for (auto i : step(m_animatedStatusValues.size())) // 0-5
+			{
+				double startVal = m_targetStatusValues[i] - m_statusChanges[i];
+				m_animatedStatusValues[i] = Math::Lerp(startVal, m_targetStatusValues[i], easeT);
+			}
+
+			// アニメーションが完了したら AfterEvent (カットイン) へ
+			if (t >= 1.0)
+			{
+				m_statusChanges.fill(0); // 変化量リセット (色を戻すため)
+				m_state = TrainingState::AfterEvent;
+			}
+			break;
+		}
 		case TrainingState::AfterEvent:
 		{
 			// カットイン開始前の処理
@@ -612,15 +678,105 @@ void TrainingScene::draw() const
 	font(U"安全性").draw(18, Vec2{ 20, 360 }, ColorF{ 1.0 });
 	font(U"メモリ").draw(18, Vec2{ 20, 430 }, ColorF{ 1.0 });
 
-	font(Format(GameData::getInstance().characterStatus.Reliability)).draw(20, Arg::topRight(210, 160), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Availability)).draw(20, Arg::topRight(210, 210), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Serviceability)).draw(20, Arg::topRight(210, 260), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Integrity)).draw(20, Arg::topRight(210, 310), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Security)).draw(20, Arg::topRight(210, 360), ColorF{ 1.0 });
-	font(Format(GameData::getInstance().characterStatus.Overload) + U"%").draw(20, Arg::topRight(210, 430), ColorF{1.0});
+	// ★ 修正: ステータス数値 (カウントアップ/ダウン描画)
+	const Array<double> textYPos = { 160, 210, 260, 310, 360 };
+	for (auto i : step(textYPos.size())) // 0-4
+	{
+		const int change = m_statusChanges[i];
+		ColorF color = Palette::White;
+		if (change > 0) color = Palette::Cyan; // カウントアップ
+		if (change < 0) color = Palette::Red;  // カウントダウン
+
+		font(Format(static_cast<int>(m_animatedStatusValues[i])))
+			.draw(20, Arg::topRight(210, textYPos[i]), color);
+	}
+
+	// ★ 修正: Overload数値
+	{
+		const int change = m_statusChanges[5];
+		ColorF color = Palette::White;
+		if (change > 0) color = Palette::Red;  // Overload増加は赤
+		if (change < 0) color = Palette::Cyan; // Overload減少は青
+
+		font(Format(static_cast<int>(m_animatedStatusValues[5])) + U"%")
+			.draw(20, Arg::topRight(210, 430), color);
+	}
 
 	//ガイドメッセージ
 	font(U"ファイルをドラッグアンドドロップしてください").draw(16, Vec2{ 280, 35 }, ColorF{ 1.0 });
+
+	// ★ 追加: ゲージの「プレビュー」描画 (本ゲージより先に描画)
+	{
+		const double maxVal = MasterData::maxStatusValue();
+
+		// --- 1. パラメータゲージ (m_bars 0-4) ---
+		// (BranchStatusBar: "center.x" から右に伸びる、水色)
+		const ColorF previewIncreaseColor(Palette::Skyblue, 0.9); // クラス定義に合わせる
+		const ColorF previewDecreaseColor(Palette::Red, 0.9);     // 減少は赤
+
+		for (auto i : step(m_bars.size()))
+		{
+			const RectF barRect = m_bars[i].rect();
+			const Vec2 center = barRect.center();
+			const double halfW = barRect.w * 0.5;
+
+			// 変化前の値 (0-100)
+			double startVal_raw = m_targetStatusValues[i] - m_statusChanges[i];
+			// 変化後の値 (0-100)
+			double targetVal_raw = m_targetStatusValues[i];
+
+			// 0.0 ～ 1.0 の割合に変換
+			double startRate = Clamp(startVal_raw / maxVal, 0.0, 1.0);
+			double targetRate = Clamp(targetVal_raw / maxVal, 0.0, 1.0);
+
+			// BranchStatusBar のロジックに合わせ、描画幅は halfW * rate
+			const double w_start = halfW * startRate;
+			const double w_target = halfW * targetRate;
+
+			if (targetRate > startRate) // 増加
+			{
+				// プレビューは目標値まで (薄い水色)
+				RectF(center.x, barRect.y, w_target, barRect.h).draw(previewIncreaseColor);
+			}
+			else if (targetRate < startRate) // 減少
+			{
+				// プレビューは「削除される部分」 (薄い赤)
+				// 描画開始X座標: center.x + 目標幅
+				// 描画幅: 開始幅 - 目標幅
+				RectF(center.x + w_target, barRect.y, w_start - w_target, barRect.h).draw(previewDecreaseColor);
+			}
+		}
+
+		// --- 2. Overloadゲージ (overloadBar) ---
+		// (StatusBar: "m_rect.x" から右に伸びる、赤色)
+		{
+			const RectF barRect = overloadBar.rect();
+			// (StatusBar.h の draw() で halfW となっているのは m_rect.w の間違いと推測)
+			const double fullW = barRect.w;
+
+			double startVal_raw = m_targetStatusValues[5] - m_statusChanges[5];
+			double targetVal_raw = m_targetStatusValues[5];
+
+			double startRate = Clamp(startVal_raw / maxVal, 0.0, 1.0);
+			double targetRate = Clamp(targetVal_raw / maxVal, 0.0, 1.0);
+
+			const double w_start = fullW * startRate;
+			const double w_target = fullW * targetRate;
+
+			if (targetRate > startRate) // 増加
+			{
+				// プレビューは目標値まで (薄い赤)
+				RectF(barRect.x, barRect.y, w_target, barRect.h).draw(ColorF(Palette::Red, 0.4));
+			}
+			else if (targetRate < startRate) // 減少
+			{
+				// プレビューは「削除される部分」 (薄い青 ※数値テキストの色に合わせる)
+				// 描画開始X座標: barRect.x + 目標幅
+				// 描画幅: 開始幅 - 目標幅
+				RectF(barRect.x + w_target, barRect.y, w_start - w_target, barRect.h).draw(ColorF(Palette::Cyan, 0.4));
+			}
+		}
+	}
 
 	for (auto i : step(m_bars.size()))
 	{
