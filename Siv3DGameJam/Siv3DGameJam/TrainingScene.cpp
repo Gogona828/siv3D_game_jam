@@ -31,13 +31,13 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_growSE = s3d::Audio(U"assets/audio/se/se_grow.mp3");
 	m_btnSE = s3d::Audio(U"assets/audio/se/se_reboot.mp3");
 
-	m_explorerPos = Vec2(770, 20);
-	m_howToPos = Vec2(770, 150);
-	m_restartPos = Vec2(770, 280);
+	m_explorerPos = Vec2(780, 20);
+	m_howToPos = Vec2(780, 120);
+	m_restartPos = Vec2(780, 220);
 	// ★ 追加: スキャンボタンの座標 (Restartの下)
-	m_scanPos = Vec2(770, 410); // 280 + 130
+	m_scanPos = Vec2(780, 320); // 280 + 130
 	// ボタンの描画倍率（0.5 = 半分サイズ）
-	m_buttonScale = 0.5;
+	m_buttonScale = 0.4;
 
 	// BGM再生（AudioManager 経由）
 	AudioManager::Get().playBGM(m_bgMusic);
@@ -692,11 +692,10 @@ void TrainingScene::draw() const
 	if (m_fileScanMode != FileScanMode::Inactive)
 	{
 		// 画面全体を黒半透明で覆う
-		RectF(Scene::Size()).draw(ColorF(0.0, 0.7));
+		RectF(Scene::Size()).draw(ColorF(0.0, 0.9));
 
 		// バツボタンを描画
 		m_closeButtonRect.draw(ColorF(1.0, 0.2, 0.2, 0.5)); // ホバー用に背景を薄く
-		m_closeButtonTex.draw(m_closeButtonRect.pos);
 		if (m_closeButtonRect.mouseOver())
 		{
 			m_closeButtonRect.draw(ColorF(1.0, 0.2, 0.2, 0.8)); // ホバーで濃く
@@ -736,9 +735,11 @@ void TrainingScene::draw() const
 			titleFont(title).drawAt(TextStyle::Outline(0.5, Palette::Black), 40, basePos.x, basePos.y, Palette::White);
 
 			largeFont(U"拡張子: {}"_fmt(m_scannedFileInfo.extension)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 80, Palette::White);
-			largeFont(U"上がりやすい: {}"_fmt(m_scannedFileInfo.upParam)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 140, Palette::Cyan);
-			largeFont(U"下がりやすい: {}"_fmt(m_scannedFileInfo.downParam)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 200, Palette::Orange);
+			largeFont(U"上がりやすい: {}"_fmt(m_scannedFileInfo.upParam)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 140, Palette::Orange);
+			largeFont(U"下がりやすい: {}"_fmt(m_scannedFileInfo.downParam)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 200, Palette::Cyan);
 			largeFont(U"イベント発生率: {}"_fmt(m_scannedFileInfo.eventProbability)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 260, Palette::Yellow);
+
+			largeFont(U"ファイルをドラッグアンドドロップ").drawAt(TextStyle::Outline(0.5, Palette::Black), 18, basePos.x, basePos.y + 350, Palette::White);
 		}
 	}
 
