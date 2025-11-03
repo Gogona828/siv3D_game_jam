@@ -27,6 +27,7 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_eatSE = s3d::Audio(U"assets/audio/se/se_eat.mp3");
 	m_cutinSE = s3d::Audio(U"assets/audio/se/se_cutin.mp3");
 	m_growSE = s3d::Audio(U"assets/audio/se/se_grow.mp3");
+	m_btnSE = s3d::Audio(U"assets/audio/se/se_reboot.mp3");
 
 	m_explorerPos = Vec2(770, 20);
 	m_howToPos = Vec2(770, 150);
@@ -91,6 +92,7 @@ void TrainingScene::update()
 				const FilePath mdFile = U"assets/howto.md";
 				if (FileSystem::Exists(mdFile))
 				{
+					AudioManager::Get().playSE(m_btnSE);
 					System::LaunchFile(mdFile);
 				}
 			}
@@ -154,16 +156,16 @@ void TrainingScene::update()
 			switch (nowEventType)
 			{
 			case EventType::Attack:
-				SetEventData(U"assets/maingame/event_image/event_1.png", U"処理速度が向上した");
+				SetEventData(U"assets/maingame/event_image/event_1.png", U"処理速度が向上した！");
 				break;
 			case EventType::Heal:
-				SetEventData(U"assets/maingame/event_image/event_2.png", U"処理速度が向上した");
+				SetEventData(U"assets/maingame/event_image/event_2.png", U"自己修復作業を行った！");
 				break;
 			case EventType::Buff:
-				SetEventData(U"assets/maingame/event_image/event_3.png", U"処理速度が向上した");
+				SetEventData(U"assets/maingame/event_image/event_3.png", U"脆弱性を修正した！");
 				break;
 			case EventType::Debuff:
-				SetEventData(U"assets/maingame/event_image/event_4.png", U"処理速度が向上した");
+				SetEventData(U"assets/maingame/event_image/event_4.png", U"バグった！！！！");
 				break;
 			default:
 				break;
@@ -506,8 +508,8 @@ void TrainingScene::draw() const
 	s3d::RectF currentTurnInnerRect{ s3d::Vec2{5,21}, 230, 100 };
 	currentTurnInnerRect.draw(ColorF(0.0, 0.0, 0.0, 0.6));
 	//中身の文字描画
-	font(U"読み取れるファイル残数").draw(20, Vec2{10, 40}, ColorF{1.0});
-	font(Format(U"{}"_fmt(maxTurn - currentTurn))).draw(TextStyle::Outline(0.5, s3d::Palette::White),38, Arg::topRight(145, 60), ColorF{ 1.0 });
+	font(U"読み取れるファイル残数").drawAt(16, Vec2{120, 50}, ColorF{1.0});
+	font(Format(U"{}"_fmt(maxTurn - currentTurn))).draw(TextStyle::Outline(0.5, s3d::Palette::White),38, Arg::topCenter(120, 65), ColorF{ 1.0 });
 	//左にステータスを表示
 	//s3d::RectF outerRect{ barPos, barMaxWidth, barHeight };
 	//outerRect.draw(s3d::Palette::Darkgray); // 背景を濃い灰色で描画
@@ -527,6 +529,9 @@ void TrainingScene::draw() const
 	font(Format(GameData::getInstance().characterStatus.Integrity)).draw(20, Arg::topRight(210, 310), ColorF{ 1.0 });
 	font(Format(GameData::getInstance().characterStatus.Security)).draw(20, Arg::topRight(210, 360), ColorF{ 1.0 });
 	font(Format(GameData::getInstance().characterStatus.Overload) + U"%").draw(20, Arg::topRight(210, 430), ColorF{1.0});
+
+	//ガイドメッセージ
+	font(U"ファイルをドラッグアンドドロップしてください").draw(16, Vec2{ 280, 35 }, ColorF{ 1.0 });
 
 	for (auto i : step(m_bars.size()))
 	{
