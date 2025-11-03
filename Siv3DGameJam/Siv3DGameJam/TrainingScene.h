@@ -39,7 +39,7 @@ public:
 		if(!m_animating)
 			return;
 		m_timer += s3d::Scene::DeltaTime();
-		double t = Clamp(m_timer / 0.5, 0.0, 1.0);  // 0.5秒でアニメーション完了
+		double t = Clamp(m_timer / 0.6, 0.0, 1.0);  // 0.5秒でアニメーション完了
 		m_value = Math::Lerp(m_startValue, m_targetValue, t);
 
 		if (t >= 1.0)
@@ -61,6 +61,8 @@ public:
 
 			// 中心から左に伸ばす
 			RectF filled(center.x - w, m_rect.y, w, m_rect.h);
+			RectF bg(center.x, m_rect.y, halfW * m_targetValue, m_rect.h);
+			bg.draw(ColorF(Palette::White, 0.5));
 			filled.draw(Palette::Red);
 		}
 		else
@@ -71,11 +73,14 @@ public:
 
 			// 中心から右に伸ばす
 			RectF filled(center.x, m_rect.y, w, m_rect.h);
+			RectF bg(center.x, m_rect.y, halfW * m_targetValue, m_rect.h);
+			bg.draw(ColorF(Palette::White, 0.5));
 			filled.draw(Palette::Skyblue);
 		}
 		//中央分離帯
 		RectF filled(center.x - 1.0, m_rect.y - 3.0, 2, m_rect.h + 6.0);
 		filled.draw(Palette::White);
+
 	}
 	void setTarget(double value)
 	{
@@ -111,7 +116,7 @@ public:
 		if (!m_animating)
 			return;
 		m_timer += s3d::Scene::DeltaTime();
-		double t = Clamp(m_timer / 0.5, 0.0, 1.0);  // 0.5秒でアニメーション完了
+		double t = Clamp(m_timer / 0.6, 0.0, 1.0);  // 0.5秒でアニメーション完了
 		m_value = Math::Lerp(m_startValue, m_targetValue, t);
 
 		if (t >= 1.0)
@@ -129,6 +134,8 @@ public:
 		m_rect.draw(ColorF{0.2,0.2,0.2});
 		// 中心から右に伸ばす
 		RectF filled(m_rect.x, m_rect.y, w, m_rect.h);
+		RectF bg(m_rect.x, m_rect.y, m_rect.w*m_targetValue, m_rect.h);
+		bg.draw(ColorF(Palette::White, 0.5));
 		filled.draw(Palette::Red);
 
 	}
@@ -306,7 +313,7 @@ private:
 	Array<double> m_targetStatusValues;   // アニメーションの目標値 (6個)
 	Array<int> m_statusChanges;           // 今回の変化量 (色分け用)
 	Stopwatch m_statusAnimTimer;          // アニメーション用タイマー
-	const double m_statusAnimDuration = 0.5; // アニメーションの長さ (0.5秒)
+	const double m_statusAnimDuration = 0.7; // アニメーションの長さ (0.5秒)
 
 	// ファイルスキャンモードの状態
 	enum class FileScanMode
