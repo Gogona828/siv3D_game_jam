@@ -17,6 +17,8 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_btn_howto = s3d::Texture(U"assets/maingame/training/btn_howto.png");;
 	m_btn_explorer = s3d::Texture(U"assets/maingame/training/btn_explorer.png");;
 	m_btn_restart = s3d::Texture(U"assets/result/restart_normal.png");;
+	// ★ 追加: スキャンボタンのテクスチャ（explorerのものを流用）
+	m_btn_scan = s3d::Texture(U"assets/maingame/training/btn_explorer.png");;
 	m_btn_hover = s3d::Texture(U"assets/maingame/training/btn_hover.png");;
 	eventBackGround = s3d::Texture(U"assets/maingame/event_image/event_bg.png");
 
@@ -32,6 +34,8 @@ TrainingScene::TrainingScene(const InitData& init)
 	m_explorerPos = Vec2(770, 20);
 	m_howToPos = Vec2(770, 150);
 	m_restartPos = Vec2(770, 280);
+	// ★ 追加: スキャンボタンの座標 (Restartの下)
+	m_scanPos = Vec2(770, 410); // 280 + 130
 	// ボタンの描画倍率（0.5 = 半分サイズ）
 	m_buttonScale = 0.5;
 
@@ -40,6 +44,10 @@ TrainingScene::TrainingScene(const InitData& init)
 
 	// SKillフォルダの初期化
 	SkillGrantService::getInstance().resetSkillFolder();
+
+	// ★ 追加: バツボタンの初期化
+	m_closeButtonRect = RectF(Scene::Width() - 50, 10, 40, 40);
+
 }
 
 void TrainingScene::update()
@@ -64,59 +72,82 @@ void TrainingScene::update()
 	const RectF howToRect{ m_howToPos, m_btn_howto.size() * m_buttonScale };
 	const RectF restartRect{ m_restartPos, m_btn_restart.size() * m_buttonScale };
 
-	if (explorerRect.mouseOver())
+	// ★ 追加: スキャンボタンのRect
+	const RectF scanButtonRect{ m_scanPos, m_btn_scan.size() * m_buttonScale };
+
+	// ★ 修正: スキャンモード中はボタン操作を無効化
+	if (m_fileScanMode == FileScanMode::Inactive)
 	{
-		m_hovered = U"Explorer";
-
-		if (MouseL.down())
+		if (explorerRect.mouseOver())
 		{
-			double now = Scene::Time();
-			if (now - m_lastClickTimeExplorer < doubleClickInterval)
-			{
-				AudioManager::Get().playSE(m_btnSE);
+			m_hovered = U"Explorer";
 
-				system("explorer.exe");
-			}
-			m_lastClickTimeExplorer = now;
-		}
-	}
-	else if (howToRect.mouseOver())
-	{
-		m_hovered = U"HowTo";
-
-		if (MouseL.down())
-		{
-			double now = Scene::Time();
-			if (now - m_lastClickTimeHowTo < doubleClickInterval)
+			if (MouseL.down())
 			{
-				const FilePath mdFile = U"assets/howto.md";
-				if (FileSystem::Exists(mdFile))
+				double now = Scene::Time();
+				if (now - m_lastClickTimeExplorer < doubleClickInterval)
 				{
 					AudioManager::Get().playSE(m_btnSE);
-					System::LaunchFile(mdFile);
-				}
-			}
-			m_lastClickTimeHowTo = now;
-		}
-	}
-	else if (restartRect.mouseOver())
-	{
-		m_hovered = U"Restart";
 
-		if (MouseL.down())
-		{
-			double now = Scene::Time();
-			if (now - m_lastClickTimeRestart < doubleClickInterval)
-			{
-				AudioManager::Get().playSE(m_btnSE);
-				changeScene(U"Title", 1.0s);
+					system("explorer.exe");
+				}
+				m_lastClickTimeExplorer = now;
 			}
-			m_lastClickTimeRestart = now;
 		}
-	}
-	else
-	{
-		m_hovered.clear();
+		else if (howToRect.mouseOver())
+		{
+			m_hovered = U"HowTo";
+
+			if (MouseL.down())
+			{
+				double now = Scene::Time();
+				if (now - m_lastClickTimeHowTo < doubleClickInterval)
+				{
+					const FilePath mdFile = U"assets/howto.md";
+					if (FileSystem::Exists(mdFile))
+					{
+						AudioManager::Get().playSE(m_btnSE);
+						System::LaunchFile(mdFile);
+					}
+				}
+				m_lastClickTimeHowTo = now;
+			}
+		}
+		else if (restartRect.mouseOver())
+		{
+			m_hovered = U"Restart";
+
+			if (MouseL.down())
+			{
+				double now = Scene::Time();
+				if (now - m_lastClickTimeRestart < doubleClickInterval)
+				{
+					AudioManager::Get().playSE(m_btnSE);
+					changeScene(U"Title", 1.0s);
+				}
+				m_lastClickTimeRestart = now;
+			}
+		}
+		// ★ 追加: スキャンボタンの処理
+		else if (scanButtonRect.mouseOver())
+		{
+			m_hovered = U"Scan"; // ホバー状態を追加
+
+			if (MouseL.down())
+			{
+				double now = Scene::Time();
+				if (now - m_lastClickTimeScan < doubleClickInterval)
+				{
+					AudioManager::Get().playSE(m_btnSE);
+					m_fileScanMode = FileScanMode::WaitingDrop; // スキャンモード起動
+				}
+				m_lastClickTimeScan = now;
+			}
+		}
+		else
+		{
+			m_hovered.clear();
+		}
 	}
 
 
@@ -173,251 +204,255 @@ void TrainingScene::update()
 		}
 	}
 
-	switch (m_state)
+	// ★ 修正: 育成用のファイル入力処理をスキャンモード中は停止
+	if (m_fileScanMode == FileScanMode::Inactive)
 	{
-	case TrainingState::CanInputFile:
-		// ファイル入力ができる状態
-		if (DragDrop::HasNewFilePaths())
+		switch (m_state)
 		{
-			if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
+		case TrainingState::CanInputFile:
+			// ファイル入力ができる状態
+			if (DragDrop::HasNewFilePaths())
 			{
-				AudioManager::Get().playSE(m_eatSE);
-
-				droppedFile = files.front();
-				fileExtension = FileSystem::Extension(droppedFile.path);
-				hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
-				size = FileSystem::FileSize(droppedFile.path);
-
-				// ファイルドロップキャラアニメ
-				m_characterAnimTimer = 0.0;
-				m_characterAnimPlaying = true;
-
-				//ファイルドロップアニメ用------------------------------------
-				// ファイルアイコンまたは汎用画像を設定
-				Texture iconTex;
-
-				// 拡張子に応じて適当なアイコンを差し替えてもOK
-				if (fileExtension == U"png" || fileExtension == U"jpg")
+				if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
 				{
-					iconTex = Texture(droppedFile.path);
-				}
-				else
-				{
-					iconTex = Texture(U"assets/maingame/training/file.png"); // 汎用アイコン
-				}
+					AudioManager::Get().playSE(m_eatSE);
 
-				// ドロップアニメを生成
-				DropAnim anim;
-				anim.texture = iconTex;
-				anim.pos = Cursor::PosF();
-				dropAnims << anim;
-				//ファイルドロップアニメ用------------------------------------
+					droppedFile = files.front();
+					fileExtension = FileSystem::Extension(droppedFile.path);
+					hash = s3d::Hash::XXHash3(droppedFile.path.narrow().data());
+					size = FileSystem::FileSize(droppedFile.path);
 
-				//TODO:重複チェック
-				m_state = TrainingState::Event;
-			}
-		}
-		break;
-	case TrainingState::Event:
-		//もし重複ファイルが入力されていたら弾く
-		if(filePathList.contains(droppedFile.path))
-		{
-			//弾く処理
-			m_state = TrainingState::CanInputFile;
-			break;
-		}
-		else
-		{
-			//重複していなければリストに追加
-			filePathList.push_back(droppedFile.path);
-		}
-		//ファイル入力が完了した状態
-		statusAddData = statusTable();
-		ChangeStatus(statusAddData);
-		// ステータスの変動を行う
-		m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability		/ MasterData::maxStatusValue());
-		m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability	/ MasterData::maxStatusValue());
-		m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability	/ MasterData::maxStatusValue());
-		m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity		/ MasterData::maxStatusValue());
-		m_bars[4].setTarget(GameData::getInstance().characterStatus.Security		/ MasterData::maxStatusValue());
-		overloadBar.setTarget(GameData::getInstance().characterStatus.Overload		/ MasterData::maxStatusValue());
-		m_state = TrainingState::AfterEvent;
-		AudioManager::Get().playSE(m_growSE);
-		break;
-	case TrainingState::AfterEvent:
-	{
-		// カットイン開始前の処理
-		if (!cutinStarted && !m_characterAnimPlaying)
-		{
+					// ファイルドロップキャラアニメ
+					m_characterAnimTimer = 0.0;
+					m_characterAnimPlaying = true;
 
-			cutinStarted = true;     // 二重再生防止
-			cutinPlaying = true;     // カットイン再生フラグON
-			cutinTimer = 0.0;        // タイマーリセット
-			waitAfterCutin = 0.0;    // 待機タイマーリセット
+					//ファイルドロップアニメ用------------------------------------
+					// ファイルアイコンまたは汎用画像を設定
+					Texture iconTex;
 
-			// イベント種類の抽選
-			nowEventType = eventTypeTable();
-			//抽選確率をJsonから取得
-			int eventCount = 1;
-			Array<int> eventProbabilities;
-
-			// イベント発生数の抽選確率をJsonから取得
-			String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
-			if (JsonReader::readData(jsonPath, U"EventCountProbability", eventProbabilities))
-			{
-				int currentProb = 0;
-				int rand = Random(1, 100);
-				for (size_t i = 0; i < eventProbabilities.size(); i++)
-				{
-					currentProb += eventProbabilities[i];
-					if (rand <= currentProb)
+					// 拡張子に応じて適当なアイコンを差し替えてもOK
+					if (fileExtension == U"png" || fileExtension == U"jpg")
 					{
-
-						eventCount = static_cast<int>(i);
-						break;
+						iconTex = Texture(droppedFile.path);
 					}
+					else
+					{
+						iconTex = Texture(U"assets/maingame/training/file.png"); // 汎用アイコン
+					}
+
+					// ドロップアニメを生成
+					DropAnim anim;
+					anim.texture = iconTex;
+					anim.pos = Cursor::PosF();
+					dropAnims << anim;
+					//ファイルドロップアニメ用------------------------------------
+
+					//TODO:重複チェック
+					m_state = TrainingState::Event;
 				}
 			}
-			if(nowEventType == EventType::None)
+			break;
+		case TrainingState::Event:
+			//もし重複ファイルが入力されていたら弾く
+			if (filePathList.contains(droppedFile.path))
 			{
-				eventDrawing = false;
-				cutinStarted = false; // 次回のカットインのためにリセット
-				m_state = TrainingState::EndTraining;
-			}
-			// イベントタイプが None でなければ、ここでSEを鳴らす
-			else if (nowEventType != EventType::None)
-			{
-				AudioManager::Get().playSE(m_cutinSE);
-			}
-			Array<int> eventIdArray = eventIdTable(nowEventType, eventCount + 1);
-			GameData::getInstance().eventList = eventIdArray;
-			getItemUnits.clear();
-			for (auto i : GameData::getInstance().eventList)
-			{
-				getItemUnits.push_back(GetItemViewUnit(i));
-			}
-			for (auto i : eventIdArray)
-			{
-				SkillGrantService::getInstance().grantByKey(MasterData::getSkillName(i));
-			}
-			if (nowEventType == EventType::None)
-			{
-				// カットイン関連フラグをリセット
-				cutinPlaying = false;
-				cutinWaiting = false;
-				cutinClosing = false;
-				cutinStarted = false;
-
-				m_state = TrainingState::EndTraining;
+				//弾く処理
+				m_state = TrainingState::CanInputFile;
 				break;
 			}
-		}
-
-
-		// カットイン再生中
-		if (cutinPlaying)
-		{
-			double t = cutinTimer / cutinDuration;
-			Vec2 center = Scene::CenterF();
-
-			// 画像をシーン横幅に合わせる
-			double scale = static_cast<double>(Scene::Width()) / cutinTexture.width();
-
-			// リサイズ後の縦幅
-			double resizedHeight = cutinTexture.height() * scale;
-
-			// 上下に広がるアニメ
-			double halfH = resizedHeight / 2 * t;
-			double topY = center.y - halfH;
-			double bottomY = center.y + halfH;
-
-			// 縦方向の描画範囲を srcRect で切り出す
-			int srcH = static_cast<int>(cutinTexture.height() * t);
-			Rect srcRect(0, 0, cutinTexture.width(), srcH);
-
-			// 描画
-			cutinTexture(srcRect).resized(Scene::Width(), srcH * scale).drawAt(center.x, topY + (srcH * scale) / 2);
-		}
-
-		// カットイン終了後の待機時間
-		if (!cutinPlaying && !eventDrawing && !cutinClosing&& !cutinWaiting)
-		{
-			waitAfterCutin += Scene::DeltaTime();
-		}
-
-		// イベント画面描画中
-		if (eventDrawing)
-		{
-			if (MouseL.down())
+			else
 			{
-				eventDrawing = false;
-				cutinStarted = false; // 次回のカットインのためにリセット
-				m_state = TrainingState::EndTraining;
+				//重複していなければリストに追加
+				filePathList.push_back(droppedFile.path);
 			}
-		}
-		break;
-	}
-	case TrainingState::EndTraining:
-		//	トレーニング終了後の状態
-		//	ターンを加算する
-		currentTurn++;
-		//	終了後、ターン数が最大に達していなければ次のターンへ
-		if (maxTurn - currentTurn > 0 && GameData::getInstance().characterStatus.Overload < 100)
+			//ファイル入力が完了した状態
+			statusAddData = statusTable();
+			ChangeStatus(statusAddData);
+			// ステータスの変動を行う
+			m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / MasterData::maxStatusValue());
+			m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / MasterData::maxStatusValue());
+			m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / MasterData::maxStatusValue());
+			m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / MasterData::maxStatusValue());
+			m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / MasterData::maxStatusValue());
+			overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / MasterData::maxStatusValue());
+			m_state = TrainingState::AfterEvent;
+			AudioManager::Get().playSE(m_growSE);
+			break;
+		case TrainingState::AfterEvent:
 		{
-			m_state = TrainingState::CanInputFile;
-			if (currentTurn == 3 && !evoluted)
+			// カットイン開始前の処理
+			if (!cutinStarted && !m_characterAnimPlaying)
 			{
-				SetCharacter(U"assets/maingame/chara_image/evolution_normal.png");
-				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(7);
 
-				// ★ここでカットイン画像更新
-				UpdateCutinTexture();
-			}
-			if (!evoluted)
-			{
-				for (int i = 0; i < GameData::getInstance().characterStatus.toArray().size(); i++)
+				cutinStarted = true;     // 二重再生防止
+				cutinPlaying = true;     // カットイン再生フラグON
+				cutinTimer = 0.0;        // タイマーリセット
+				waitAfterCutin = 0.0;    // 待機タイマーリセット
+
+				// イベント種類の抽選
+				nowEventType = eventTypeTable();
+				//抽選確率をJsonから取得
+				int eventCount = 1;
+				Array<int> eventProbabilities;
+
+				// イベント発生数の抽選確率をJsonから取得
+				String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
+				if (JsonReader::readData(jsonPath, U"EventCountProbability", eventProbabilities))
 				{
-					if (GameData::getInstance().characterStatus.toArray()[i] / MasterData::maxStatusValue() >= 0.7)
+					int currentProb = 0;
+					int rand = Random(1, 100);
+					for (size_t i = 0; i < eventProbabilities.size(); i++)
 					{
-						characterTextureId = i + 1;
-						SetCharacter(MasterData::getTexturePath(i + 1));
-						evoluted = true;
-						GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(i);
+						currentProb += eventProbabilities[i];
+						if (rand <= currentProb)
+						{
 
-						// ★ここでカットイン画像更新
-						UpdateCutinTexture();
-						break;
+							eventCount = static_cast<int>(i);
+							break;
+						}
 					}
 				}
-			}
-			int count = 0;
-			for (int i = 0; i < GameData::getInstance().characterStatus.toArray().size(); i++)
-			{
-				if (GameData::getInstance().characterStatus.toArray()[i] < 0)
+				if (nowEventType == EventType::None)
 				{
-					count++;
+					eventDrawing = false;
+					cutinStarted = false; // 次回のカットインのためにリセット
+					m_state = TrainingState::EndTraining;
+				}
+				// イベントタイプが None でなければ、ここでSEを鳴らす
+				else if (nowEventType != EventType::None)
+				{
+					AudioManager::Get().playSE(m_cutinSE);
+				}
+				Array<int> eventIdArray = eventIdTable(nowEventType, eventCount + 1);
+				GameData::getInstance().eventList = eventIdArray;
+				getItemUnits.clear();
+				for (auto i : GameData::getInstance().eventList)
+				{
+					getItemUnits.push_back(GetItemViewUnit(i));
+				}
+				for (auto i : eventIdArray)
+				{
+					SkillGrantService::getInstance().grantByKey(MasterData::getSkillName(i));
+				}
+				if (nowEventType == EventType::None)
+				{
+					// カットイン関連フラグをリセット
+					cutinPlaying = false;
+					cutinWaiting = false;
+					cutinClosing = false;
+					cutinStarted = false;
+
+					m_state = TrainingState::EndTraining;
+					break;
 				}
 			}
-			if(count >=3)
-			{
-				characterTextureId = 0;
-				SetCharacter(U"assets/maingame/chara_image/bug_normal.png");
-				GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(8);
 
-				// ★ここでカットイン画像更新
-				UpdateCutinTexture();
+
+			// カットイン再生中
+			if (cutinPlaying)
+			{
+				double t = cutinTimer / cutinDuration;
+				Vec2 center = Scene::CenterF();
+
+				// 画像をシーン横幅に合わせる
+				double scale = static_cast<double>(Scene::Width()) / cutinTexture.width();
+
+				// リサイズ後の縦幅
+				double resizedHeight = cutinTexture.height() * scale;
+
+				// 上下に広がるアニメ
+				double halfH = resizedHeight / 2 * t;
+				double topY = center.y - halfH;
+				double bottomY = center.y + halfH;
+
+				// 縦方向の描画範囲を srcRect で切り出す
+				int srcH = static_cast<int>(cutinTexture.height() * t);
+				Rect srcRect(0, 0, cutinTexture.width(), srcH);
+
+				// 描画
+				cutinTexture(srcRect).resized(Scene::Width(), srcH * scale).drawAt(center.x, topY + (srcH * scale) / 2);
 			}
+
+			// カットイン終了後の待機時間
+			if (!cutinPlaying && !eventDrawing && !cutinClosing && !cutinWaiting)
+			{
+				waitAfterCutin += Scene::DeltaTime();
+			}
+
+			// イベント画面描画中
+			if (eventDrawing)
+			{
+				if (MouseL.down())
+				{
+					eventDrawing = false;
+					cutinStarted = false; // 次回のカットインのためにリセット
+					m_state = TrainingState::EndTraining;
+				}
+			}
+			break;
 		}
-		else
-		{
-			GameData& gameData = GameData::getInstance();
-			gameData.infos().pcTextureId = characterTextureId;
-			// バトルシーンへ移行
-			changeScene(U"Battle");
+		case TrainingState::EndTraining:
+			//	トレーニング終了後の状態
+			//	ターンを加算する
+			currentTurn++;
+			//	終了後、ターン数が最大に達していなければ次のターンへ
+			if (maxTurn - currentTurn > 0 && GameData::getInstance().characterStatus.Overload < 100)
+			{
+				m_state = TrainingState::CanInputFile;
+				if (currentTurn == 3 && !evoluted)
+				{
+					SetCharacter(U"assets/maingame/chara_image/evolution_normal.png");
+					GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(7);
+
+					// ★ここでカットイン画像更新
+					UpdateCutinTexture();
+				}
+				if (!evoluted)
+				{
+					for (int i = 0; i < GameData::getInstance().characterStatus.toArray().size(); i++)
+					{
+						if (GameData::getInstance().characterStatus.toArray()[i] / MasterData::maxStatusValue() >= 0.7)
+						{
+							characterTextureId = i + 1;
+							SetCharacter(MasterData::getTexturePath(i + 1));
+							evoluted = true;
+							GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(i);
+
+							// ★ここでカットイン画像更新
+							UpdateCutinTexture();
+							break;
+						}
+					}
+				}
+				int count = 0;
+				for (int i = 0; i < GameData::getInstance().characterStatus.toArray().size(); i++)
+				{
+					if (GameData::getInstance().characterStatus.toArray()[i] < 0)
+					{
+						count++;
+					}
+				}
+				if (count >= 3)
+				{
+					characterTextureId = 0;
+					SetCharacter(U"assets/maingame/chara_image/bug_normal.png");
+					GameData::getInstance().evolutedCharacterTextureId = static_cast<CharacterType>(8);
+
+					// ★ここでカットイン画像更新
+					UpdateCutinTexture();
+				}
+			}
+			else
+			{
+				GameData& gameData = GameData::getInstance();
+				gameData.infos().pcTextureId = characterTextureId;
+				// バトルシーンへ移行
+				changeScene(U"Battle");
+			}
+			break;
+		default:
+			break;
 		}
-		break;
-	default:
-		break;
 	}
 
 	m_bars[0].update();
@@ -450,6 +485,52 @@ void TrainingScene::update()
 	// 1秒経過したものを削除
 	dropAnims.remove_if([](const DropAnim& a) { return a.time > 1.0; });
 	//ファイルドロップアニメ用------------------------------------
+
+	// ★ 追加: スキャンモード専用の更新処理 (update関数の最後に追加)
+	if (m_fileScanMode != FileScanMode::Inactive)
+	{
+		// バツボタンでモード終了
+		if (m_closeButtonRect.leftClicked())
+		{
+			m_fileScanMode = FileScanMode::Inactive;
+			m_scannedFileInfo = ScannedFileInfo(); // 情報をリセット
+		}
+
+		// ★ 修正: Scene::DragDrop() ではなく、既存のAPI (DragDrop::HasNewFilePaths) を使用
+		if (DragDrop::HasNewFilePaths())
+		{
+			// 既存の m_eatSE を流用
+			AudioManager::Get().playSE(m_eatSE);
+
+			if (auto files = DragDrop::GetDroppedFilePaths(); !files.isEmpty())
+			{
+				const FilePath droppedFilePath = files.front().path; // 最初のファイル (例: C:\test.cpp)
+				// 1. ドロップされたファイル自体の情報を先に保存
+				m_scannedFileInfo.fileName = FileSystem::FileName(droppedFilePath); // (例: "test.cpp")
+				const String droppedFileExt = FileSystem::Extension(droppedFilePath); // (例: "cpp")
+				m_scannedFileInfo.extension = droppedFileExt;
+
+				// 2. 拡張子に対応するデータJSONのパスを組み立てる
+				// (statusTable() と同じロジック)
+				String dataJsonPath = U"assets/maingame/training/data/{}.json"_fmt(droppedFileExt);
+
+				// 3. データJSONを読み込む
+				if (loadScanJson(dataJsonPath))
+				{
+					// 成功: loadScanJson が upParam などを設定した
+					m_fileScanMode = FileScanMode::Displaying;
+				}
+				else
+				{
+					// 失敗: 対応するJSONがない (不明な拡張子扱い)
+					m_scannedFileInfo.upParam = U"-";
+					m_scannedFileInfo.downParam = U"-";
+					m_scannedFileInfo.eventProbability = U"中";
+					m_fileScanMode = FileScanMode::Displaying;
+				}
+			}
+		}
+	}
 }
 void TrainingScene::draw() const
 {
@@ -490,6 +571,8 @@ void TrainingScene::draw() const
 	m_btn_explorer.resized(m_btn_explorer.size() * m_buttonScale).draw(m_explorerPos);
 	m_btn_howto.resized(m_btn_howto.size() * m_buttonScale).draw(m_howToPos);
 	m_btn_restart.resized(m_btn_restart.size() * m_buttonScale).draw(m_restartPos);
+	// ★ 追加: スキャンボタンの描画
+	m_btn_scan.resized(m_btn_scan.size() * m_buttonScale).draw(m_scanPos);
 
 	if (m_hovered == U"Explorer")
 	{
@@ -502,6 +585,12 @@ void TrainingScene::draw() const
 	else if (m_hovered == U"Restart")
 	{
 		m_btn_hover.resized(m_btn_restart.size() * m_buttonScale).draw(m_restartPos);
+	}
+	// ★ 追加: スキャンボタンのホバー
+	else if (m_hovered == U"Scan")
+	{
+		// m_btn_scan のサイズでホバーテクスチャを描画
+		m_btn_hover.resized(m_btn_scan.size() * m_buttonScale).draw(m_scanPos);
 	}
 
 	// 左上に残ターン数を表示
@@ -597,6 +686,60 @@ void TrainingScene::draw() const
 		cutinTexture(srcRect)
 			.resized(Scene::Width(), srcH * (Scene::Width() / (double)cutinTexture.width()))
 			.drawAt(center);
+	}
+
+	// ★ 追加: スキャンモードのUI描画 (draw関数の最後に描画)
+	if (m_fileScanMode != FileScanMode::Inactive)
+	{
+		// 画面全体を黒半透明で覆う
+		RectF(Scene::Size()).draw(ColorF(0.0, 0.7));
+
+		// バツボタンを描画
+		m_closeButtonRect.draw(ColorF(1.0, 0.2, 0.2, 0.5)); // ホバー用に背景を薄く
+		m_closeButtonTex.draw(m_closeButtonRect.pos);
+		if (m_closeButtonRect.mouseOver())
+		{
+			m_closeButtonRect.draw(ColorF(1.0, 0.2, 0.2, 0.8)); // ホバーで濃く
+		}
+
+		// バツ印の座標を計算
+		// m_closeButtonRect.pos が (Scene::Width() - 50, 10)
+		const Vec2 topLeft = m_closeButtonRect.pos;
+		const Vec2 p1 = topLeft.movedBy(10, 10); // 左上
+		const Vec2 p2 = topLeft.movedBy(30, 30); // 右下
+		const Vec2 p3 = topLeft.movedBy(10, 30); // 左下
+		const Vec2 p4 = topLeft.movedBy(30, 10); // 右上
+
+		// 2本の線を直接画面に描画
+		Line(p1, p2).draw(3, Palette::White);
+		Line(p3, p4).draw(3, Palette::White);
+
+		if (m_fileScanMode == FileScanMode::WaitingDrop)
+		{
+			// ドロップ待ちテキスト
+			font(U"ファイルをドラッグアンドドロップでスキャン").drawAt(TextStyle::Outline(0.5, Palette::Black), 32, Scene::Center().x, Scene::Height() - 100, ColorF(1.0));
+		}
+		else if (m_fileScanMode == FileScanMode::Displaying)
+		{
+			// スキャン結果の表示
+			const Vec2 basePos = Scene::Center().movedBy(0, -150);
+			const Font& titleFont = font; // (既存の font を流用)
+			const Font& largeFont = font; // (既存の font を流用。本当は大きい方が良い)
+
+			// ファイル名（不明な拡張子の場合はタイトル）
+			String title = m_scannedFileInfo.fileName;
+			if (m_scannedFileInfo.upParam == U"-") // 不明な拡張子の判定
+			{
+				title = U"不明な拡張子";
+			}
+
+			titleFont(title).drawAt(TextStyle::Outline(0.5, Palette::Black), 40, basePos.x, basePos.y, Palette::White);
+
+			largeFont(U"拡張子: {}"_fmt(m_scannedFileInfo.extension)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 80, Palette::White);
+			largeFont(U"上がりやすい: {}"_fmt(m_scannedFileInfo.upParam)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 140, Palette::Cyan);
+			largeFont(U"下がりやすい: {}"_fmt(m_scannedFileInfo.downParam)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 200, Palette::Orange);
+			largeFont(U"イベント発生率: {}"_fmt(m_scannedFileInfo.eventProbability)).drawAt(TextStyle::Outline(0.5, Palette::Black), 28, basePos.x, basePos.y + 260, Palette::Yellow);
+		}
 	}
 
 	clickEffect.draw();    // クリックエフェクト描画
@@ -723,106 +866,117 @@ Array<SystemStatusAddData> TrainingScene::statusTable()
 }
 EventType TrainingScene::eventTypeTable()
 {
-	EventType eventType;
+	// =================================================================
+		// 優先度1: OverloadによるDebuff抽選
+		// =================================================================
+	{
+		GameData& gameData = GameData::getInstance();
+		const double currentOverload = gameData.characterStatus.Overload;
+		const double maxOverload = MasterData::maxStatusValue(); // (例: 100.0)
+
+		// ★ 修正: 確率が上昇し始めるしきい値（最大値の半分）
+		const double threshold = maxOverload / 2.0; // (例: 50.0)
+
+		// Overloadがしきい値（半分）を超えている場合のみ、Debuff抽選を行う
+		if (currentOverload > threshold)
+		{
+			// ★ 修正: 確率を計算（50% -> 0%, 100% -> 100% の線形補間）
+			// Math::Map(入力値, 入力最小, 入力最大, 出力最小, 出力最大)
+			const double debuffProbability = Math::Map(
+				currentOverload,
+				threshold,     // 50.0 (この値の時 0.0 になる)
+				maxOverload,   // 100.0 (この値の時 1.0 になる)
+				0.0,           // 出力最小 (0%)
+				1.0            // 出力最大 (100%)
+			);
+
+			// 確率（debuffProbability）で抽選
+			if (RandomBool(debuffProbability))
+			{
+				//Print << U"OverloadによりDebuffイベント発生 (Overload: {}, 確率: {}%)"_fmt(currentOverload, debuffProbability * 100);
+				return EventType::Debuff;
+			}
+		}
+		// Overloadが threshold 以下の場合は、Debuff抽選自体がスキップされる (確率 0%)
+	}
+
+	// =================================================================
+	// 優先度2: Debuffに選ばれなかった場合、ファイルベースの抽選を行う
+	// =================================================================
+	EventType eventType = EventType::None; // デフォルトはNone
 
 	String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
 	Array<int> eventProbability;
+
 	if (JsonReader::readData(jsonPath, U"EventFireProbability", eventProbability))
 	{
 		int probability = Random(1, 100);
 
-		//イベントがそもそも発生するかの判定
+		// 1. イベントがそもそも発生するかの判定
 		if (100 - probability >= eventProbability[0])
 		{
-			eventType = EventType::None;
+			return EventType::None; // 発生しない
 		}
-		else
-		{
 
-			//ファイルが該当する場合、イベントの種類の確率をJsonから取得
-			if (JsonReader::readData(jsonPath, U"EventTypeProbability", eventProbability))
+		// 2. 発生する場合、イベントの種類を抽選 (Debuffを除く)
+		Array<int> eventTypeProbability;
+		if (JsonReader::readData(jsonPath, U"EventTypeProbability", eventTypeProbability))
+		{
+			// ★ 修正: Attack, Heal, Buff のみの確率で重み付き抽選
+
+			// 元のJSONにDebuff(4番目)が含まれていると仮定
+			if (eventTypeProbability.size() < 3)
 			{
-				int allWeight = 0;
-				for (const auto& weight : eventProbability)
+				// データが不正な場合は抽選失敗
+				return EventType::None;
+			}
+
+			// Attack, Heal, Buff のみの合計ウェイトを計算
+			int allWeight = eventTypeProbability[0] + eventTypeProbability[1] + eventTypeProbability[2];
+
+			if (allWeight <= 0)
+			{
+				// 抽選対象がない
+				return EventType::None;
+			}
+
+			int rnd = Random(1, allWeight);
+			int cumulativeWeight = 0;
+
+			// ★ 修正: i < 3 (Debuffの手前まで) でループ
+			for (size_t i = 0; i < 3; i++)
+			{
+				cumulativeWeight += eventTypeProbability[i];
+				if (rnd <= cumulativeWeight)
 				{
-					allWeight += weight;
-				}
-				int rnd = Random(1, allWeight);
-				int cumulativeWeight = 0;
-				for (size_t i = 0; i < eventProbability.size(); i++)
-				{
-					cumulativeWeight += eventProbability[i];
-					if (rnd <= cumulativeWeight)
+					switch (i)
 					{
-						switch (i)
-						{
-						case 0:
-							eventType = EventType::Attack;
-							break;
-						case 1:
-							eventType = EventType::Heal;
-							break;
-						case 2:
-							eventType = EventType::Buff;
-							break;
-						case 3:
-							eventType = EventType::Debuff;
-							break;
-						default:
-							eventType = EventType::None;
-							break;
-						}
+					case 0: return EventType::Attack;
+					case 1: return EventType::Heal;
+					case 2: return EventType::Buff;
 					}
 				}
 			}
-			else
-			{
-				//ファイルが該当しなかった場合、ランダムで決定
-				//現状は等しく起きうる
-				int eventProb = Random(1, 4);
-				if (eventProb == 1)
-				{
-					eventType = EventType::Attack;
-				}
-				else if (eventProb == 2)
-				{
-					eventType = EventType::Heal;
-				}
-				else if (eventProb == 3)
-				{
-					eventType = EventType::Buff;
-				}
-				else
-				{
-					eventType = EventType::Debuff;
-				}
-			}
+		}
+		else
+		{
+			// ★ 修正: JSONが読めなかった場合のフォールバック (Debuffを除く)
+			int eventProb = Random(1, 3); // 1～3 (Attack, Heal, Buff)
+			if (eventProb == 1) return EventType::Attack;
+			if (eventProb == 2) return EventType::Heal;
+			if (eventProb == 3) return EventType::Buff;
 		}
 	}
 	else
 	{
-		//ファイルが該当しなかった場合、ランダムで決定
-		//現状は等しく起きうる
-		int eventProb = Random(1, 4);
-		if (eventProb == 1)
-		{
-			eventType = EventType::Attack;
-		}
-		else if (eventProb == 2)
-		{
-			eventType = EventType::Heal;
-		}
-		else if (eventProb == 3)
-		{
-			eventType = EventType::Buff;
-		}
-		else
-		{
-			eventType = EventType::Debuff;
-		}
+		// ★ 修正: JSONが読めなかった場合のフォールバック (Debuffを除く)
+		int eventProb = Random(1, 3); // 1～3 (Attack, Heal, Buff)
+		if (eventProb == 1) return EventType::Attack;
+		if (eventProb == 2) return EventType::Heal;
+		if (eventProb == 3) return EventType::Buff;
 	}
 
-	return eventType;
+	return EventType::None; // ここに到達した場合（抽選ミスなど
 }
 Array<int> TrainingScene::eventIdTable(EventType type,int n)
 {
@@ -992,4 +1146,102 @@ void TrainingScene::UpdateCutinTexture()
 	}
 
 	cutinTexture = Texture(cutinPath);
+}
+
+// TrainingScene.cpp の末尾に追加
+
+// 配列の中で最も大きい値を持つ要素のインデックスを返す
+int getIndexOfMaxValue(const Array<int>& arr)
+{
+	if (arr.isEmpty()) return -1;
+	int maxVal = -1;
+	int maxIndex = -1;
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		if (arr[i] > maxVal)
+		{
+			maxVal = arr[i];
+			maxIndex = static_cast<int>(i);
+		}
+	}
+	return maxIndex;
+}
+
+// インデックスからパラメータ名を取得 (draw()関数内の描画名を参考)
+String TrainingScene::getParamNameByIndex(int index) const
+{
+	switch (index)
+	{
+		// 既存の draw() での表示名に合わせる
+	case 0: return U"信頼性";
+	case 1: return U"可用性";
+	case 2: return U"保守性";
+	case 3: return U"保全性";
+	case 4: return U"安全性";
+	default: return U"-";
+	}
+}
+
+// イベント発生確率の配列から「低/中/高」を判定
+String TrainingScene::getEventProbabilityString(const Array<int>& probabilityArray) const
+{
+	if (probabilityArray.isEmpty())
+	{
+		return U"中"; // 不明
+	}
+
+	// eventTypeTable()のロジックを流用 (JSONの値は「発生しない」確率)
+	// (100 - X) が発生確率
+	const int probValue = probabilityArray[0];
+
+	if ((100 - probValue) >= 70) return U"高"; // 発生確率 70%以上
+	if ((100 - probValue) >= 30) return U"中"; // 発生確率 30%以上
+	return U"低"; // 発生確率 30%未満
+}
+
+// ★ 修正: 既存の JsonReader::readData に 100% 準拠する
+bool TrainingScene::loadScanJson(const FilePath& path)
+{
+	// path は "assets/maingame/training/data/cpp.json" など
+	const String filePathString = path;
+
+	// 読み込みが *すべて* 成功したか
+	bool success = true;
+
+	// --- 1. 上がりやすいパラメータ (UpStatusProbability) ---
+	Array<int> upProb;
+	if (JsonReader::readData(filePathString, U"UpStatusProbability", upProb))
+	{
+		m_scannedFileInfo.upParam = getParamNameByIndex(getIndexOfMaxValue(upProb));
+	}
+	else {
+		m_scannedFileInfo.upParam = U"-";
+		success = false; // 読み込み失敗
+	}
+
+	// --- 2. 下がりやすいパラメータ (DownStatusProbability) ---
+	Array<int> downProb;
+	if (JsonReader::readData(filePathString, U"DownStatusProbability", downProb))
+	{
+		m_scannedFileInfo.downParam = getParamNameByIndex(getIndexOfMaxValue(downProb));
+	}
+	else {
+		m_scannedFileInfo.downParam = U"-";
+		success = false; // 読み込み失敗
+	}
+
+	// --- 3. イベント発生確率 (EventFireProbability) ---
+	Array<int> eventProb;
+	if (JsonReader::readData(filePathString, U"EventFireProbability", eventProb))
+	{
+		m_scannedFileInfo.eventProbability = getEventProbabilityString(eventProb);
+	}
+	else {
+		// 失敗時はデフォルト値（"中"）
+		m_scannedFileInfo.eventProbability = U"中";
+		success = false; // 読み込み失敗
+	}
+
+	// 1つでもキーの読み込みに失敗したら false を返す
+	return success;
 }

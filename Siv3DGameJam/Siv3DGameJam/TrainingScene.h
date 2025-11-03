@@ -289,4 +289,38 @@ private:
 	}
 
 	int32 characterTextureId = 0;
+
+	// ファイルスキャンモードの状態
+	enum class FileScanMode
+	{
+		Inactive,		// 非アクティブ（通常の育成画面）
+		WaitingDrop,	// スキャンモード中（ドロップ待ち）
+		Displaying,		// スキャンモード中（情報表示中）
+	};
+
+	// スキャンしたファイル情報を保持する構造体
+	struct ScannedFileInfo
+	{
+		String fileName = U"";
+		String extension = U"";
+		String upParam = U"-";
+		String downParam = U"-";
+		String eventProbability = U"中";
+	};
+
+	// --- メンバー変数の追加 ---
+
+	// スキャンモード関連
+	FileScanMode m_fileScanMode = FileScanMode::Inactive;
+	Texture m_btn_scan;			// スキャンボタン用テクスチャ（explorerを流用）
+	Vec2 m_scanPos;				// スキャンボタンの座標
+	double m_lastClickTimeScan = 0.0; // スキャンボタンのダブルクリック判定用
+	RectF m_closeButtonRect;	// スキャンモードを閉じるバツボタン
+	Texture m_closeButtonTex;	// バツボタンのテクスチャ
+	ScannedFileInfo m_scannedFileInfo; // スキャン結果の保持
+
+	// --- ヘルパー関数の宣言追加 ---
+	bool loadScanJson(const FilePath& path);
+	String getParamNameByIndex(int index) const;
+	String getEventProbabilityString(const Array<int>& probabilityArray) const;
 };
