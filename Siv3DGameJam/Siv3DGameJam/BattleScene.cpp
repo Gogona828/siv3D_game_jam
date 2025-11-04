@@ -7,6 +7,7 @@
 # include "SkillGrantService.h"
 # include "SkillContainer.h"
 # include "FIX.h"
+# include "Sequence.h"
 # include <Siv3D.hpp>
 
 using namespace s3d;
@@ -19,10 +20,10 @@ BattleScene::BattleScene(const InitData& init) : IScene(init)
 	// BGM再生（AudioManager 経由）
 	AudioManager::Get().playBGM(m_bgMusic);
 
-	cpDropZone.configZone(0, { U"atk", U"def", U"heal", U"buff", U"pdf"});
-	cpDropZone.configZone(1, { U"atk", U"def", U"heal", U"buff", U"pdf" });
-	cpDropZone.configZone(2, { U"atk", U"def", U"heal", U"buff", U"pdf" });
-	cpDropZone.configZone(3, { U"atk", U"def", U"heal", U"buff", U"pdf" });
+	cpDropZone.configZone(0, { U"atk", U"def", U"heal", U"buff", U"boss"});
+	cpDropZone.configZone(1, { U"atk", U"def", U"heal", U"buff", U"boss" });
+	cpDropZone.configZone(2, { U"atk", U"def", U"heal", U"buff", U"boss" });
+	cpDropZone.configZone(3, { U"atk", U"def", U"heal", U"buff", U"boss" });
 
 	GameData& gameData = GameData::getInstance();
 	gameData.rebuildPlayerInfo();
@@ -59,61 +60,106 @@ void BattleScene::update()
 	//グリッチノイズ用---------------------------------------------
 #pragma endregion
 
-	switch (currentBattleState)
+	sequence.update(Scene::DeltaTime());
+
+	// switchが前のケースに戻れない(?)そうなので、無理やりループを作りcontinueで回避する用
+	constexpr int reenter = 1;
+	for (int hops = 0; hops < reenter; hops++)
 	{
-		case BattleState::Boot:
-			// Init処理、あるなら
-			// デバッグ用
-			// SkillGrantService::getInstance().resetSkillFolder();
-			// SkillGrantService::getInstance().grantByKey(U"FIX.atk");
-			currentBattleState = BattleState::BoxReset;
-			break;
+		switch (currentBattleState)
+		{
+			case BattleState::Boot:
+				// Init処理、あるなら
+				// デバッグ用
+				SkillGrantService::getInstance().resetSkillFolder();
+				SkillGrantService::getInstance().grantByKey(U"FIX.atk");
+				currentBattleState = BattleState::BoxReset;
+				continue;
 
-		case BattleState::BoxReset:
-			cpDropZone.resetAllSlots();
-			for (int i = 0; i < 4; i++)
-			{
-				cpDropZone.setDropBoxTexture(i, defaultPath);
-			}
-
-			currentBattleState = BattleState::EnemyActArrangement;
-			break;
-
-		case BattleState::EnemyActArrangement:
-			{
-				int n = Random(0, 5);
-				for (int i = 0; i < 2; i++)
+			case BattleState::BoxReset:
+				cpDropZone.resetAllSlots();
+				for (int i = 0; i < 4; i++)
 				{
-					cpDropZone.setDropBoxTexture(BossActionPattern[n][i], bossBackPath, bossFrontPath);
-					cpDropZone.assignSlot(BossActionPattern[n][i], U"assets.pdf", false);
-					// TODO: 行動登録
-					SkillContainer::getInstance().registerSkill(U"FIX.atk");
+					cpDropZone.setDropBoxTexture(i, defaultPath);
 				}
-			}
 
-			currentBattleState = BattleState::WaitAlign;
-			break;
+				slotKeys.assign(4, U"");
 
-		case BattleState::WaitAlign:
-			if (cpDropZone.allComplete())
-			{
-				currentBattleState = BattleState::SequentialProcess;
-			}
-			break;
-		case BattleState::SequentialProcess:
-			for (int i = 0; i < 4; i++)
-			{
-				// TODO: 行動
-			}
-			currentBattleState = BattleState::BoxReset;
-			currentBattleState = BattleState::GameClear;
-			currentBattleState = BattleState::GameOver;
-			break;
-		case BattleState::GameOver:
-			break;
-		case BattleState::GameClear:
-			break;
+				currentBattleState = BattleState::EnemyActArrangement;
+				continue;
+
+			case BattleState::EnemyActArrangement:
+				{
+					int n = Random(0, 5);
+					for (int i = 0; i < 2; i++)
+					{
+						cpDropZone.setDropBoxTexture(BossActionPattern[n][i], bossBackPath, bossFrontPath);
+						// 行動の登録
+						cpDropZone.assignSlot(BossActionPattern[n][i], U"BossNormalAttack.atk", false);
+					}
+				}
+
+				currentBattleState = BattleState::WaitAlign;
+				continue;
+
+			case BattleState::WaitAlign:
+				if (cpDropZone.allComplete())
+				{
+					currentBattleState = BattleState::SequentialProcess;
+					
+					// DropBoxの左から順に処理
+					for (int slot = 0; slot < 4; ++slot)
+					{
+						String key = slotKeys[slot];
+						if (key.isEmpty())
+						{
+							key = cpDropZone.getSkillKey(slot);
+						}
+						if (key.isEmpty())
+						{
+							continue;
+						}
+						
+						sequence.addAction([key]()
+						{
+							SkillContainer::getInstance().registerSkill(key);
+							if (auto sk = SkillContainer::getInstance().createRegistered(key))
+							{
+								sk->execute();
+							}
+							else
+							{
+								Console << U"[Skill] not found: " << key;
+							}
+						});
+
+						// 上記の処理が終わるまで待機
+						sequence.addWaitForAllSequencesArmed();
+					}
+					
+					// 4つ目の待機が終わったらターン終了へ
+					sequence.onAllDone([this]() { Judge(); });
+					sequence.start();
+					continue;
+				}
+				break;
+			case BattleState::SequentialProcess:
+				break;
+			case BattleState::GameOver:
+				break;
+			case BattleState::GameClear:
+				break;
+		}
 	}
+}
+
+void BattleScene::Judge()
+{
+	currentBattleState = BattleState::BoxReset;
+
+	// TODO: ゲームの分岐条件をつくる
+	// currentBattleState = BattleState::GameClear;
+	// currentBattleState = BattleState::GameOver;
 }
 
 void BattleScene::draw() const

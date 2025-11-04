@@ -119,6 +119,7 @@
     <ClCompile Include="AudioManager.h" />
     <ClCompile Include="BattleScene.cpp" />
     <ClCompile Include="BehaviorInfoView.cpp" />
+    <ClCompile Include="BossNormalAttack.cpp" />
     <ClCompile Include="BossCharacterView.cpp" />
     <ClCompile Include="BruteForce.cpp" />
     <ClCompile Include="DropZone.cpp" />
@@ -132,6 +133,7 @@
     <ClCompile Include="ObtainedSkills.cpp" />
     <ClCompile Include="PlayerCharacterView.cpp" />
     <ClCompile Include="ResultScene.cpp" />
+    <ClCompile Include="SequenceManager.cpp" />
     <ClCompile Include="SkillCatalog.cpp" />
     <ClCompile Include="SkillContainer.cpp" />
     <ClCompile Include="SkillGrantService.cpp" />
@@ -348,6 +350,7 @@
   <ItemGroup>
     <ClInclude Include="BattleScene.h" />
     <ClInclude Include="BehaviorInfoView.h" />
+    <ClInclude Include="BossNormalAttack.h" />
     <ClInclude Include="BossCharacterView.h" />
     <ClInclude Include="BruteForce.h" />
     <ClInclude Include="DropZone.h" />
@@ -363,6 +366,8 @@
     <ClInclude Include="MasterData.h" />
     <ClInclude Include="RankColor.h" />
     <ClInclude Include="ResultScene.h" />
+    <ClInclude Include="Sequence.h" />
+    <ClInclude Include="SequenceManager.h" />
     <ClInclude Include="SkillCatalog.h" />
     <ClInclude Include="SkillContainer.h" />
     <ClInclude Include="SkillEnums.h" />

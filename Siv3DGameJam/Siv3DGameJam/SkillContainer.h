@@ -1,17 +1,14 @@
-﻿// SkillContainer.hpp
-#pragma once
+﻿#pragma once
 #include <Siv3D.hpp>
 #include <memory>
 #include "ISkill.h"
 using namespace s3d;
 
-// A案：関数ポインタ × 静的表（std::function も HashTable も不使用）
 class SkillContainer {
 public:
-	// シングルトン
 	static SkillContainer& getInstance();
 
-	// ★ キーだけで登録（取得済みリストに追加）
+	// キーだけで登録
 	bool registerSkill(const s3d::String& key);
 
 	// 解除 / 確認
@@ -28,19 +25,20 @@ public:
 	s3d::Array<s3d::String> knownKeys() const;       // 静的対応表のキー一覧
 	s3d::Array<s3d::String> registeredKeys() const;  // 取得済みキー一覧
 
+	using CreatorFn = std::unique_ptr<ISkill>(*)();
+	struct Entry { s3d::StringView key; CreatorFn make; };
+	const Entry* getSkillTable(size_t& key) { return table(key); }
+
 private:
 	SkillContainer() = default;
 
 	// ==== 内部：静的対応表（キー→生成関数）====
-	using CreatorFn = std::unique_ptr<ISkill>(*)();
 	template<class T>
 	static std::unique_ptr<ISkill> Make() { return std::make_unique<T>(); }
 
-	struct Entry { s3d::StringView key; CreatorFn make; };
-
 	// .cpp 側に実体（FixAtk.hpp 等を include した上で埋める）
 	static const Entry* table(size_t& outSize);
-	static CreatorFn    findCreator(const s3d::String& key);
+	static CreatorFn findCreator(const s3d::String& key);
 
 	// 取得済みスキル（キーのみ保持）
 	s3d::HashSet<s3d::String> m_registered;

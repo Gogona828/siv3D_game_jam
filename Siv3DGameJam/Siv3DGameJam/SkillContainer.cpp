@@ -1,5 +1,9 @@
 ﻿#include "SkillContainer.h"
+// スキルのヘッダー追加
 #include "FIX.h"
+#include "BruteForce.h"
+// ボス行動
+#include "BossNormalAttack.h"
 
 using namespace s3d;
 
@@ -10,7 +14,11 @@ SkillContainer& SkillContainer::getInstance() {
 
 const SkillContainer::Entry* SkillContainer::table(size_t& outSize) {
 	static const Entry t[] = {
+		// このフォーマットでスキルを足していく
 		{ U"FIX.atk",   &SkillContainer::Make<FIX>  },
+		{ U"BruteForce.atk",   &SkillContainer::Make<BruteForce>  },
+		// ボス用コマンド
+		{ U"BossNormalAttack.atk",   &SkillContainer::Make<BossNormalAttack>  },
 	};
 	outSize = std::size(t);
 	return t;
