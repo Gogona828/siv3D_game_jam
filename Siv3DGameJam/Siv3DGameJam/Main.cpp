@@ -47,6 +47,7 @@ void Main()
 
 	while (s3d::System::Update()) {
 		app.update();
+		SequenceManager::getInstance().updateAll(Scene::DeltaTime());
 		const Point cursorPos = Cursor::Pos();
 		//font(U"{}"_fmt(cursorPos)).draw(40, Vec2{ 40, 40 }, ColorF{ 0.1 });
 	}

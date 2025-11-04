@@ -30,17 +30,19 @@ public:
 
 	Zone& zone(size_t i)
 	{
-		return m_zones[i];
+		return zones[i];
 	}
 	const Zone& zone(size_t i) const
 	{
-		return m_zones[i];
+		return zones[i];
 	}
 
 	void setDropBoxTexture(int32 num, String path, String front = U"");
 
+	String getSkillKey(int slot) const;
+
 private:
-	std::array<Zone, 4> m_zones;
+	std::array<Zone, 4> zones;
 	void layoutHorizontalCenter(const SizeF& zoneSize, double gap);
 	static bool isAllowed(const Zone& zone, const FilePath& path);
 	String playerBoard = U"assets/maingame/battle/battle_playerborder.png";

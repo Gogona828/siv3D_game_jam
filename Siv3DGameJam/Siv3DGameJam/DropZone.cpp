@@ -1,4 +1,5 @@
 ﻿#include "DropZone.h"
+#include "SkillContainer.h"
 using namespace s3d;
 
 DropZone::DropZone(const SizeF& zoneSize, double gap)
@@ -8,15 +9,15 @@ DropZone::DropZone(const SizeF& zoneSize, double gap)
 
 void DropZone::setDropBoxTexture(int32 num, String path, String front)
 {
-	m_zones[num].zoneTexture = Texture(path);
+	zones[num].zoneTexture = Texture(path);
 	if (front.isEmpty())
 	{
-		m_zones[num].frontVisble = false;
+		zones[num].frontVisble = false;
 		return;
 	}
 
-	m_zones[num].frontTexture = Texture(front);
-	m_zones[num].frontVisble = true;
+	zones[num].frontTexture = Texture(front);
+	zones[num].frontVisble = true;
 }
 
 void DropZone::layoutHorizontalCenter(const SizeF& zoneSize, double gap)
@@ -29,15 +30,15 @@ void DropZone::layoutHorizontalCenter(const SizeF& zoneSize, double gap)
 	{
 		const double x = origin.x + i * (zoneSize.x + gap);
 		const double y = origin.y;
-		m_zones[i].rect = RectF{ x, y, zoneSize.x, zoneSize.y };
-		m_zones[i].zoneTexture = Texture(U"assets/maingame/battle/battle_druganddrop.png");
+		zones[i].rect = RectF{ x, y, zoneSize.x, zoneSize.y };
+		zones[i].zoneTexture = Texture(U"assets/maingame/battle/battle_druganddrop.png");
 	}
 }
 
 void DropZone::configZone(size_t i, const Array<String>& allowExts)
 {
-	if (i >= m_zones.size()) return;
-	m_zones[i].allowExts = allowExts;
+	if (i >= zones.size()) return;
+	zones[i].allowExts = allowExts;
 }
 
 /// @brief
@@ -49,8 +50,8 @@ void DropZone::configZone(size_t i, const Array<String>& allowExts)
 /// @return 
 bool DropZone::assignSlot(size_t i, const FilePath& path, bool forceOverWrite)
 {
-	if (i >= m_zones.size()) return false;
-	auto& zone = m_zones[i];
+	if (i >= zones.size()) return false;
+	auto& zone = zones[i];
 
 	if (!isAllowed(zone, path))
 	{
@@ -63,12 +64,64 @@ bool DropZone::assignSlot(size_t i, const FilePath& path, bool forceOverWrite)
 	}
 
 	zone.slotPath = path;
+
+#pragma region ボスならリターン弾く
+	auto toLowerASCII = [](s3d::StringView sv) -> s3d::String
+		{
+			s3d::String out;
+			out.reserve(sv.size());
+			for (s3d::char32 ch : sv)
+			{
+				if (U'A' <= ch && ch <= U'Z') ch = (ch - U'A') + U'a';
+				out.push_back(ch);
+			}
+			return out;
+		};
+
+	const s3d::String lowerPath = toLowerASCII(s3d::String{ path });
+	const s3d::String lowerName = toLowerASCII(s3d::FileSystem::FileName(path));
+
+	const bool bossInName = (lowerName.indexOf(s3d::StringView{ U"boss" }) != s3d::String::npos);
+
+	const bool bossInDir =
+		(lowerPath.indexOf(s3d::StringView{ U"/boss/" }) != s3d::String::npos) ||
+		(lowerPath.indexOf(s3d::StringView{ U"\\boss\\" }) != s3d::String::npos) ||
+		lowerPath.starts_with(s3d::StringView{ U"boss/" }) ||
+		lowerPath.starts_with(s3d::StringView{ U"boss\\" }) ||
+		lowerPath.ends_with(s3d::StringView{ U"/boss" }) ||
+		lowerPath.ends_with(s3d::StringView{ U"\\boss" });
+
+	const bool hasBossInPath = (bossInName || bossInDir);
+
+	if (hasBossInPath) return true;
+#pragma endregion
+
 	return true;
+}
+
+String DropZone::getSkillKey(int slot) const
+{
+	if (slot < 0 || static_cast<size_t>(slot) >= zones.size()) {
+		return U"";
+	}
+	const auto& opt = zones[slot].slotPath;
+	if (!opt) {
+		return U"";
+	}
+	const FilePath& fp = *opt;
+
+	const String base = FileSystem::BaseName(fp);
+	// 拡張子（.無し）
+	const String ext = FileSystem::Extension(fp).lowercase(); 
+
+	if (base.isEmpty()) return U"";
+	// "FIX.atk" 形式
+	return ext.isEmpty() ? base : (base + U"." + ext);
 }
 
 void DropZone::resetAllSlots()
 {
-	for (auto& zone : m_zones)
+	for (auto& zone : zones)
 	{
 		zone.slotPath.reset();
 	}
@@ -76,13 +129,13 @@ void DropZone::resetAllSlots()
 
 bool DropZone::isZoneComplete(size_t i) const
 {
-	if (i >= m_zones.size()) return false;
-	return m_zones[i].slotPath.has_value();
+	if (i >= zones.size()) return false;
+	return zones[i].slotPath.has_value();
 }
 
 bool DropZone::allComplete() const
 {
-	for (const auto& zone : m_zones)
+	for (const auto& zone : zones)
 	{
 		if (!zone.slotPath) return false;
 	}
@@ -106,16 +159,16 @@ bool DropZone::isAllowed(const Zone& zone, const FilePath& path)
 void DropZone::update()
 {
 	// マウスオーバーチェック
-	for (auto& zone : m_zones)
+	for (auto& zone : zones)
 	{
 		zone.mouseOver = zone.rect.mouseOver();
 	}
 
 	for (const auto& drop : DragDrop::GetDroppedFilePaths())
 	{
-		for (size_t i = 0; i < m_zones.size(); i++)
+		for (size_t i = 0; i < zones.size(); i++)
 		{
-			auto& zone = m_zones[i];
+			auto& zone = zones[i];
 			if (!zone.rect.intersects(drop.pos)) continue;
 
 			const bool isOk = assignSlot(i, drop.path, false);
@@ -125,7 +178,11 @@ void DropZone::update()
 				// 認証
 				setDropBoxTexture(i, playerBoard, playerFront);
 				// TODO: スキル生成
-
+				const String key = getSkillKey(static_cast<int>(i));
+				if (!key.isEmpty())
+				{
+					SkillContainer::getInstance().registerSkill(key);
+				}
 			}
 			else
 			{
@@ -146,7 +203,7 @@ void DropZone::update()
 
 void DropZone::draw() const
 {
-	for (const auto& zone : m_zones)
+	for (const auto& zone : zones)
 	{
 		zone.zoneTexture.resized(zone.rect.size).draw(zone.rect.pos);
 		if (!zone.frontVisble) continue;

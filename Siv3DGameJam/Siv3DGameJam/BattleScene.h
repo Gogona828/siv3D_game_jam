@@ -10,6 +10,7 @@
 # include "BehaviorInfoView.h"
 # include "BossCharacterView.h"
 #include "ClickEffect.h"
+# include "Sequence.h"
 
 enum class BattleState
 {
@@ -60,6 +61,9 @@ private:
 		{ 2, 3 },
 	};
 
+	Sequence sequence;
+	void Judge();
+
 public:
 	enum class State
 	{
@@ -70,6 +74,9 @@ public:
 	};
 
 	int turnCount = 0;
+
+	// 4つのスロットに、あとで実行するスキルキーを保持する
+	Array<s3d::String> slotKeys{ U"", U"", U"", U"" };
 
 	//explicit BattleScene(DropZone& dz);
 	BattleScene(const InitData& init);

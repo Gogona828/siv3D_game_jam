@@ -1,8 +1,8 @@
-﻿#include "BruteForce.h"
+﻿#include "BossNormalAttack.h"
 #include "Sequence.h"
 using namespace s3d;
 
-void BruteForce::execute()
+void BossNormalAttack::execute()
 {
 	auto sequence = std::make_shared<Sequence>();
 	sequence->addAction([this]()
@@ -10,10 +10,11 @@ void BruteForce::execute()
 		action();
 	});
 	sequence->addWait(0.6);
-	sequence->onAfterEach([this](size_t i)
-	{
-		after();
-	});
 
 	sequence->startAutoShared();
+}
+
+void BossNormalAttack::action()
+{
+	Console << U"boss attack!!";
 }
