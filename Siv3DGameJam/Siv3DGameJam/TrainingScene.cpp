@@ -6,6 +6,9 @@
 #include "Common.h"
 #include "JsonReader.h"
 #include "SkillGrantService.h"
+#include "CharacterStatusChangeTable.h"
+
+using namespace UIElement;
 
 TrainingScene::TrainingScene(const InitData& init)
 	: IScene{ init } // SceneManager対応の初期化
@@ -62,7 +65,6 @@ TrainingScene::TrainingScene(const InitData& init)
 
 	// ★ 追加: バツボタンの初期化
 	m_closeButtonRect = RectF(Scene::Width() - 50, 10, 40, 40);
-
 }
 
 void TrainingScene::update()
@@ -284,7 +286,8 @@ void TrainingScene::update()
 				filePathList.push_back(droppedFile.path);
 			}
 			// 1. これから変動する値を計算
-			statusAddData = statusTable();
+			CharacterStatusChangeTable characterStatusChangeTable(fileExtension, size, hash);
+			statusAddData = characterStatusChangeTable.statusTable();
 
 			// 2. アニメーション用の変数を設定
 			m_statusChanges.fill(0); // 変化量リセット
@@ -295,7 +298,6 @@ void TrainingScene::update()
 
 			// 3. GameDataを即座に更新 (ChangeStatusがclampを行うため)
 			ChangeStatus(statusAddData);
-
 			// 4. アニメーションの「開始値」と「目標値」を再設定
 			const auto& statusArray = GameData::getInstance().characterStatus.toArray();
 			for (auto i : step(statusArray.size())) // 0-4
@@ -309,11 +311,11 @@ void TrainingScene::update()
 
 
 			// 5. ゲージのターゲットを設定 (これは既存のままでOK)
-			m_bars[0].setTarget(GameData::getInstance().characterStatus.Reliability / MasterData::maxStatusValue());
-			m_bars[1].setTarget(GameData::getInstance().characterStatus.Availability / MasterData::maxStatusValue());
-			m_bars[2].setTarget(GameData::getInstance().characterStatus.Serviceability / MasterData::maxStatusValue());
-			m_bars[3].setTarget(GameData::getInstance().characterStatus.Integrity / MasterData::maxStatusValue());
-			m_bars[4].setTarget(GameData::getInstance().characterStatus.Security / MasterData::maxStatusValue());
+			m_bars[0].setValue(GameData::getInstance().characterStatus.Reliability / MasterData::maxStatusValue());
+			m_bars[1].setValue(GameData::getInstance().characterStatus.Availability / MasterData::maxStatusValue());
+			m_bars[2].setValue(GameData::getInstance().characterStatus.Serviceability / MasterData::maxStatusValue());
+			m_bars[3].setValue(GameData::getInstance().characterStatus.Integrity / MasterData::maxStatusValue());
+			m_bars[4].setValue(GameData::getInstance().characterStatus.Security / MasterData::maxStatusValue());
 			overloadBar.setTarget(GameData::getInstance().characterStatus.Overload / MasterData::maxStatusValue());
 
 			// 6. アニメーション開始
@@ -666,16 +668,8 @@ void TrainingScene::draw() const
 	font(U"読み取れるファイル残数").drawAt(16, Vec2{120, 50}, ColorF{1.0});
 	font(Format(U"{}"_fmt(maxTurn - currentTurn))).draw(TextStyle::Outline(0.5, s3d::Palette::White),38, Arg::topCenter(120, 65), ColorF{ 1.0 });
 	//左にステータスを表示
-	//s3d::RectF outerRect{ barPos, barMaxWidth, barHeight };
-	//outerRect.draw(s3d::Palette::Darkgray); // 背景を濃い灰色で描画
 	s3d::RectF statusBackground{ s3d::Vec2{5,150}, 230, 340 };
 	statusBackground.draw(ColorF(0.0,0.0,0.0,0.6));
-	//ステータス
-	font(U"信頼性").draw(18, Vec2{ 20, 160 }, ColorF{ 1.0 });
-	font(U"可用性").draw(18, Vec2{ 20, 210 }, ColorF{ 1.0 });
-	font(U"保守性").draw(18, Vec2{ 20, 260 }, ColorF{ 1.0 });
-	font(U"保全性").draw(18, Vec2{ 20, 310 }, ColorF{ 1.0 });
-	font(U"安全性").draw(18, Vec2{ 20, 360 }, ColorF{ 1.0 });
 	font(U"メモリ").draw(18, Vec2{ 20, 430 }, ColorF{ 1.0 });
 
 	// ★ 修正: ステータス数値 (カウントアップ/ダウン描画)
@@ -829,125 +823,6 @@ void TrainingScene::draw() const
 	clickEffect.draw();    // クリックエフェクト描画
 }
 
-Array<SystemStatusAddData> TrainingScene::statusTable()
-{
-	Array<SystemStatusAddData> statusAddData;
-	//ステータスの変動基本値を決定する
-	//現状は「ハッシュの3,5,2桁目の和を16で割った余り×1GBをマックスとした容量倍率（１～３倍）」で決定
-	int digit =( (hash / 100) % 10) + (((hash / 10000) % 10) + (hash / 10) % 10) % 16;
-	float sizeInGB = size / (1024 * 1024 * 1024);
-	float mul = Math::Lerp(1.0, 3.0, sizeInGB);
-	int param = static_cast<int>(digit * mul * 1.3);
-	//さらに各ステータスRandom 0-5の範囲で変動を加える
-	//ステータス変動は「変動基本値 + Random（０－５の範囲）を加算」「（変動基本値/3）＋ Random(0-5)を減算」「容量(GB) + Random(0-10)を加算（Zipを除く）」の３つ
-	String jsonPath = U"assets/maingame/training/data/{}.json"_fmt(fileExtension);
-	Array<int> upStatusProbability;
-
-	bool missLoad = false;
-	if (JsonReader::readData(jsonPath, U"UpStatusProbability", upStatusProbability))
-	{
-		int allWeight = 0;
-		for (const auto& weight : upStatusProbability)
-		{
-			allWeight += weight;
-		}
-		int rnd = Random(1, allWeight);
-		int cumulativeWeight = 0;
-		for(int i = 0; i < upStatusProbability.size(); i++)
-		{
-			cumulativeWeight += upStatusProbability[i];
-			if(rnd <= cumulativeWeight)
-			{
-				SystemStatusAddData upStatusData;
-				upStatusData.addId = i;
-				Array<int> upStatusValueMultiply;
-				if(JsonReader::readData(jsonPath, U"UpStatusValueMultiply", upStatusValueMultiply))
-				{
-					upStatusData.addValue = (param + Random(0, 5)) * (upStatusValueMultiply[i] * 0.01);
-				}
-				else
-				{
-					//該当データがなければ1倍で処理
-					upStatusData.addValue = (param + Random(0, 5)) * 1;
-				}
-				statusAddData.push_back(upStatusData);
-				break;
-			}
-		}
-	}
-	else
-	{
-		missLoad = true;
-	}
-	Array<int> downStatusProbability;
-	if(JsonReader::readData(jsonPath, U"DownStatusProbability", downStatusProbability))
-	{
-		int allWeight = 0;
-		for (const auto& weight : downStatusProbability)
-		{
-			allWeight += weight;
-		}
-		int rnd = Random(1, allWeight);
-		int cumulativeWeight = 0;
-		for (int i = 0; i < downStatusProbability.size(); i++)
-		{
-			cumulativeWeight += downStatusProbability[i];
-			if (rnd <= cumulativeWeight)
-			{
-				SystemStatusAddData downStatusData;
-				downStatusData.addId = i;
-				Array<int> downStatusValueMultiply;
-				if (JsonReader::readData(jsonPath, U"DownStatusValueMultiply", downStatusValueMultiply))
-				{
-					downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1 * (downStatusValueMultiply[i] * 0.01);
-				}
-				else
-				{
-					//該当データがなければ1倍で処理
-					downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1 * 1;
-				}
-				statusAddData.push_back(downStatusData);
-				break;
-			}
-		}
-	}
-	else
-	{
-		missLoad = true;
-	}
-	if (fileExtension == U"zip")
-	{
-		SystemStatusAddData overloadStatusData;
-		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = (size / (1024 * 1024 * 1024) + Random(7, 10)) * -1 * 7.0;
-		statusAddData.push_back(overloadStatusData);
-	}
-	else
-	{
-		SystemStatusAddData overloadStatusData;
-		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = Math::Abs(size / (1024 * 1024 * 1024) + Random(3, 6) * 3.5);
-		statusAddData.push_back(overloadStatusData);
-	}
-	if(missLoad)
-	{
-		//該当がない場合はランダムでステータス変動
-		SystemStatusAddData upStatusData;
-		upStatusData.addId = Random(0, 4);
-		upStatusData.addValue = param + Random(0, 5);
-		statusAddData.push_back(upStatusData);
-		SystemStatusAddData downStatusData;
-		downStatusData.addId = Random(0, 4);
-		downStatusData.addValue = ((param / 2) + Random(0, 5)) * -1;
-		statusAddData.push_back(downStatusData);
-
-		SystemStatusAddData overloadStatusData;
-		overloadStatusData.addId = static_cast<int>(StatusId::Overload);
-		overloadStatusData.addValue = Math::Abs(size / (1024 * 1024 * 1024) + Random(3, 18));
-		statusAddData.push_back(overloadStatusData);
-	}
-	return statusAddData;
-}
 EventType TrainingScene::eventTypeTable()
 {
 	// =================================================================

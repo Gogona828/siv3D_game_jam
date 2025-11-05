@@ -4,6 +4,7 @@
 #include "ClickEffect.h"
 # include "AudioManager.h"
 # include "MasterData.h"
+#include "UIElement.h"
 
 enum class TrainingState
 {
@@ -25,163 +26,6 @@ enum class EventType
 	Buff,
 	Debuff,
 	None
-};
-
-class BranchStatusBar
-{
-public:
-	BranchStatusBar(Vec2 pos, double width, double height)
-		: m_rect{ pos, width, height } {
-	}
-
-	void update()
-	{
-		if(!m_animating)
-			return;
-		m_timer += s3d::Scene::DeltaTime();
-		double t = Clamp(m_timer / 0.6, 0.0, 1.0);  // 0.5秒でアニメーション完了
-		m_value = Math::Lerp(m_startValue, m_targetValue, t);
-
-		if (t >= 1.0)
-		{
-			m_animating = false;
-		}
-	}
-
-	void draw() const
-	{
-		const Vec2 center = m_rect.center();
-		const double halfW = m_rect.w * 0.5;
-		m_rect.draw(ColorF{ 0.2,0.2,0.2});
-		if (m_value < 0)
-		{
-			// 左向き（赤）
-			const double rate = Clamp(-m_value, 0.0, 1.0);
-			const double w = halfW * rate;
-
-			// 中心から左に伸ばす
-			RectF filled(center.x - w, m_rect.y, w, m_rect.h);
-			RectF bg(center.x, m_rect.y, halfW * m_targetValue, m_rect.h);
-			bg.draw(ColorF(Palette::White, 0.5));
-			filled.draw(Palette::Red);
-		}
-		else
-		{
-			// 右向き（青）
-			const double rate = Clamp(m_value, 0.0, 1.0);
-			const double w = halfW * rate;
-
-			// 中心から右に伸ばす
-			RectF filled(center.x, m_rect.y, w, m_rect.h);
-			RectF bg(center.x, m_rect.y, halfW * m_targetValue, m_rect.h);
-			bg.draw(ColorF(Palette::White, 0.5));
-			filled.draw(Palette::Skyblue);
-		}
-		//中央分離帯
-		RectF filled(center.x - 1.0, m_rect.y - 3.0, 2, m_rect.h + 6.0);
-		filled.draw(Palette::White);
-
-	}
-	void setTarget(double value)
-	{
-		m_startValue = m_value;
-		m_targetValue = Clamp(value, -1.0, 1.0);
-		m_timer = 0.0;
-		m_animating = true;
-	}
-	// ★ この関数を追加
-	RectF rect() const
-	{
-		return m_rect;
-	}
-
-private:
-	RectF m_rect;
-	double m_value = 0;
-	double m_startValue = 0;
-	double m_targetValue = 0;
-	double m_timer = 0.0;
-	bool m_animating = false;
-};
-
-class StatusBar
-{
-public:
-	StatusBar(Vec2 pos, double width, double height)
-		: m_rect{ pos, width, height } {
-	}
-
-	void update()
-	{
-		if (!m_animating)
-			return;
-		m_timer += s3d::Scene::DeltaTime();
-		double t = Clamp(m_timer / 0.6, 0.0, 1.0);  // 0.5秒でアニメーション完了
-		m_value = Math::Lerp(m_startValue, m_targetValue, t);
-
-		if (t >= 1.0)
-		{
-			m_animating = false;
-		}
-	}
-
-	void draw() const
-	{
-		const double halfW = m_rect.w;
-		// 右向き（青）
-		const double rate = Clamp(m_value, 0.0, 1.0);
-		const double w = halfW * rate;
-		m_rect.draw(ColorF{0.2,0.2,0.2});
-		// 中心から右に伸ばす
-		RectF filled(m_rect.x, m_rect.y, w, m_rect.h);
-		RectF bg(m_rect.x, m_rect.y, m_rect.w*m_targetValue, m_rect.h);
-		bg.draw(ColorF(Palette::White, 0.5));
-		filled.draw(Palette::Red);
-
-	}
-	void setTarget(double value)
-	{
-		m_startValue = m_value;
-		m_targetValue = Clamp(value, 0.0, 1.0);
-		m_timer = 0.0;
-		m_animating = true;
-	}
-	// ★ この関数を追加
-	RectF rect() const
-	{
-		return m_rect;
-	}
-
-private:
-	RectF m_rect;
-	double m_value = 0;
-	double m_startValue = 0;
-	double m_targetValue = 0;
-	double m_timer = 0.0;
-	bool m_animating = false;
-};
-
-class GetItemViewUnit
-{
-public:
-	GetItemViewUnit(int id)
-		:eventId(id), font{ FontMethod::MSDF, 48 }{
-		String eventFileName = MasterData::getSkillName(eventId);
-		String right = eventFileName.split(U'.').back();
-		m_texture = Texture(MasterData::getTexturePath(MasterData::getTextureId(right)));
-		m_name = MasterData::getSkillName(eventId);
-	}
-private:
-	int eventId;
-	String m_name;
-	Texture m_texture;
-	Font font;
-public:
-	void draw(Vec2 pos) const
-	{
-		m_texture.resized(75).draw(pos);
-		font(m_name).draw(18,pos + Vec2{ 75 + 10, 75 / 2 - 10});
-	}
 };
 
 class TrainingScene : public App::Scene
@@ -267,15 +111,15 @@ private:
 	uint64 hash;//ハッシュ値格納用
 	Array<SystemStatusAddData> statusAddData;
 
-	Array<BranchStatusBar> m_bars = {
-			{ Vec2{ 20, 190 }, 200, 15 },
-			{ Vec2{ 20, 240 }, 200, 15 },
-			{ Vec2{ 20, 290 }, 200, 15 },
-			{ Vec2{ 20, 340 }, 200, 15 },
-			{ Vec2{ 20, 390 }, 200, 15 },
+	Array<UIElement::StatusWidgetUnit> m_bars = {
+			{U"信頼性",U"", Vec2{20, 160}, 200, 15,font},
+			{U"可用性",U"", Vec2{20, 210}, 200, 15,font},
+			{U"保守性",U"", Vec2{ 20, 260 }, 200, 15 ,font},
+			{U"保全性",U"", Vec2{ 20, 310 }, 200, 15 ,font},
+			{U"安全性",U"", Vec2{ 20, 360 }, 200, 15 ,font},
 	};
-	Array<GetItemViewUnit> getItemUnits;
-	StatusBar overloadBar{ Vec2{ 20, 460 }, 200, 15 };
+	Array<UIElement::GetItemViewUnit> getItemUnits;
+	UIElement::StatusBar overloadBar{ Vec2{ 20, 460 }, 200, 15 };
 
 	bool initialized = false;
 
