@@ -1,5 +1,6 @@
 ﻿#include "FIX.h"
 #include "Sequence.h"
+#include "GameData.h"
 using namespace s3d;
 
 void FIX::execute()
@@ -20,4 +21,8 @@ void FIX::execute()
 	});
 
 	sequence->startAutoShared();
+}
+
+void FIX::action(){
+	GameData::getInstance().applyBossDamage(1000000);
 }

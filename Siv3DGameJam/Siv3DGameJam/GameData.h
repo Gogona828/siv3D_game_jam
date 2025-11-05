@@ -35,6 +35,7 @@ enum class CharacterType
 struct BossCharacterInfo
 {
 	int32 hp = 1234567;
+	int32 maxHp = 1234567;
 	int32 breakValue = 3;
 };
 
@@ -95,6 +96,73 @@ public:
 		eventList.clear();
 	}
 
+	// ★★★ ここから追加 ★★★
+
+	// --- HP/Damage Management ---
+	// (BattleScene::Judge() や ISkill から使用)
+
+	/**
+	 * @brief プレイヤーの現在HPを取得します (信頼性)
+	 */
+	int getPlayerHP() const
+	{
+		// プレイヤーHPは "信頼性 (Reliability)" を使う
+		return pcInfo.reliability;
+	}
+
+	/**
+	 * @brief ボスの現在HPを取得します
+	 */
+	int getBossHP() const
+	{
+		return bossInfo.hp;
+	}
+
+	/**
+	 * @brief プレイヤーにダメージを与えます (HPは0未満にならない)
+	 * @param damage
+	 */
+	void applyPlayerDamage(int damage)
+	{
+		pcInfo.reliability -= damage;
+		if (pcInfo.reliability < 0)
+		{
+			pcInfo.reliability = 0;
+		}
+	}
+
+	/**
+	 * @brief プレイヤーを回復します (最大HPを超えない)
+	 */
+	void applyPlayerHeal(int amount)
+	{
+		// ★ 修正: pcInfo.maxReliability -> pcInfo.maxHp
+		Remap(characterStatus.Reliability + amount, m_playerMaxHp, m_playerMaxHp);
+	}
+
+	/**
+	 * @brief ボスにダメージを与えます (HPは0未満にならない)
+	 * @param damage
+	 */
+	void applyBossDamage(int damage)
+	{
+		bossInfo.hp -= damage;
+		if (bossInfo.hp < 0)
+		{
+			bossInfo.hp = 0;
+		}
+	}
+
+	/**
+	 * @brief ボスを回復します (最大HPを超えない)
+	 */
+	void applyBossHeal(int amount)
+	{
+		bossInfo.hp = Min(bossInfo.maxHp, bossInfo.hp + amount);
+	}
+
+	// ★★★ ここまで追加 ★★★
+
 	const PlayerCharacterInfo& infos() const noexcept { return pcInfo; }
 	PlayerCharacterInfo& infos() noexcept { return pcInfo; }
 
@@ -113,14 +181,18 @@ public:
 
 	void rebuildPlayerInfo()
 	{
-		pcInfo.reliability = Remap(characterStatus.Reliability, 100, 10000);
+		pcInfo.reliability = Remap(characterStatus.Reliability, m_playerMaxHp, m_playerMaxHp);
 		pcInfo.availability = Remap(characterStatus.Availability, 0, 20);
 		pcInfo.serviceability = Remap(characterStatus.Serviceability, 0, 2000);
 		pcInfo.integrity = Remap(characterStatus.Integrity, 0, 10000);
 		pcInfo.security = Remap(characterStatus.Security, 0, 100);
 	}
+
 private:
 	GameData() = default;
 	PlayerCharacterInfo pcInfo;
 	BossCharacterInfo bossInfo;
+
+	int m_playerMaxHp = 10000;
+	int m_playerMinHp = 100;
 };

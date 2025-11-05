@@ -12,10 +12,7 @@ class FIX : public ISkill
 	void execute() override;
 
 private:
-	void action()
-	{
-		Console << U"action!";
-	}
+	void action();
 	void after()
 	{
 		Console << U"safe";

@@ -122,14 +122,32 @@ void BattleScene::update()
 						
 						sequence.addAction([key]()
 						{
-							SkillContainer::getInstance().registerSkill(key);
-							if (auto sk = SkillContainer::getInstance().createRegistered(key))
+							//SkillContainer::getInstance().registerSkill(key);
+							if (key.starts_with(U"Boss")) // ボスのスキルか？ Bossで始まっているかで判定している
 							{
-								sk->execute();
+								// ボススキルは createKnown で生成
+								if (auto sk = SkillContainer::getInstance().createKnown(key))
+								{
+									sk->execute();
+								}
+								else
+								{
+									// tableにも存在しない（タイプミスなど）
+									Console << U"[Skill] Master list (Known) not found: " << key;
+								}
 							}
-							else
+							else // プレイヤースキル
 							{
-								Console << U"[Skill] not found: " << key;
+								// プレイヤースキルは createRegistered で生成
+								if (auto sk = SkillContainer::getInstance().createRegistered(key))
+								{
+									sk->execute();
+								}
+								else
+								{
+									// プレイヤーが習得していない
+									Console << U"[Skill] Player skill (Registered) not found: " << key;
+								}
 							}
 						});
 
@@ -146,8 +164,12 @@ void BattleScene::update()
 			case BattleState::SequentialProcess:
 				break;
 			case BattleState::GameOver:
+				getData().gameOverFlag = true;
+				changeScene(U"Result");
 				break;
 			case BattleState::GameClear:
+				getData().gameOverFlag = false;
+				changeScene(U"Result");
 				break;
 		}
 	}
@@ -155,7 +177,22 @@ void BattleScene::update()
 
 void BattleScene::Judge()
 {
-	currentBattleState = BattleState::BoxReset;
+	// ★ 修正: 勝敗判定ロジックを追加
+
+		// (GameData にHPを取得する関数が実装されていると仮定)
+	if (GameData::getInstance().getPlayerHP() <= 0)
+	{
+		currentBattleState = BattleState::GameOver;
+	}
+	else if (GameData::getInstance().getBossHP() <= 0)
+	{
+		currentBattleState = BattleState::GameClear;
+	}
+	else
+	{
+		// どちらのHPも残っていれば、次のターンへ
+		currentBattleState = BattleState::BoxReset;
+	}
 
 	// TODO: ゲームの分岐条件をつくる
 	// currentBattleState = BattleState::GameClear;
