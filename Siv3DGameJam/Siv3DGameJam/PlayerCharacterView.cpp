@@ -13,6 +13,69 @@ PlayerCharacterView::PlayerCharacterView()
 	maxMp = gameData.infos().availability;
 }
 
+// ★ update() を追加
+void PlayerCharacterView::update()
+{
+	if (!m_isActionAnimating)
+	{
+		return;
+	}
+
+	double t = m_actionAnimTimer.sF() / m_actionAnimDuration;
+	if (t >= 1.0)
+	{
+		m_yOffset = 0.0;
+		m_isActionAnimating = false;
+	}
+	else
+	{
+		// 0.0 -> 0.5 (中間) -> 1.0 (終了)
+		// EaseOutCubic を使い、中間で -30px まで上がる
+		if (t < 0.5)
+		{
+			// 0.0 -> 0.5 (上がる)
+			m_yOffset = Math::Lerp(0.0, -30.0, EaseOutCubic(t * 2.0));
+		}
+		else
+		{
+			// 0.5 -> 1.0 (下がる)
+			m_yOffset = Math::Lerp(-30.0, 0.0, EaseInCubic((t - 0.5) * 2.0));
+		}
+	}
+
+	// ★ 点滅アニメーションの更新
+	if (m_isBlinking)
+	{
+		double t = m_blinkTimer.sF();
+		if (t > m_blinkDuration)
+		{
+			m_isBlinking = false;
+			m_blinkVisible = true; // 確実に表示状態に戻す
+		}
+		else
+		{
+			// 0.1秒ごと（t * 10.0）に表示/非表示を切り替える
+			m_blinkVisible = (static_cast<int>(t * 10.0) % 2 == 0);
+		}
+	}
+}
+
+// ★ 点滅開始トリガー
+void PlayerCharacterView::playDamageBlink()
+{
+	if (m_isBlinking) return; // アニメーション中は無視
+	m_isBlinking = true;
+	m_blinkTimer.restart();
+}
+
+// ★ アニメーション開始トリガーを追加
+void PlayerCharacterView::playActionAnimation()
+{
+	if (m_isActionAnimating) return;
+	m_isActionAnimating = true;
+	m_actionAnimTimer.restart();
+}
+
 void PlayerCharacterView::draw() const
 {
 	GameData& gameData = GameData::getInstance();
@@ -20,7 +83,8 @@ void PlayerCharacterView::draw() const
 	// 親のピボット設定
 	// 基本的にcharacterInfoOffsetをずらせばこのスコープ内のUIが移動する
 	Rect characterInfoRect{ Arg::center(120, 400), 500 };
-	const Transformer2D t0{ Mat3x2::Translate(characterInfoRect.center())};
+	// ★ 修正: m_yOffset を Translate に追加
+	const Transformer2D t0{ Mat3x2::Translate(characterInfoRect.center() + Vec2(0, m_yOffset)) };
 	characterTexture.resized(400, 400).draw(Arg::center(0, 0));
 
 #pragma region HPMP

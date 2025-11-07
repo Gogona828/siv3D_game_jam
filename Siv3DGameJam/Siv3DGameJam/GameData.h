@@ -188,6 +188,26 @@ public:
 		pcInfo.security = Remap(characterStatus.Security, 0, 100);
 	}
 
+	// ★ 追加: BattleSceneがフラグを確認・リセットするための関数
+	bool checkPlayerHitFlag()
+	{
+		if (m_playerJustHit)
+		{
+			m_playerJustHit = false;
+			return true;
+		}
+		return false;
+	}
+	bool checkBossHitFlag()
+	{
+		if (m_bossJustHit)
+		{
+			m_bossJustHit = false;
+			return true;
+		}
+		return false;
+	}
+
 private:
 	GameData() = default;
 	PlayerCharacterInfo pcInfo;
@@ -195,4 +215,8 @@ private:
 
 	int m_playerMaxHp = 10000;
 	int m_playerMinHp = 100;
+
+	// ★ 追加: 点滅アニメーション用フラグ
+	bool m_playerJustHit = false;
+	bool m_bossJustHit = false;
 };

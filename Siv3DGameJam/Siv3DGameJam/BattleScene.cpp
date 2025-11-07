@@ -38,6 +38,20 @@ BattleScene::BattleScene(const InitData& init) : IScene(init)
 
 void BattleScene::update()
 {
+	// ★ 追加: Viewのupdateを呼び出す
+	cpPlayerCharacterView.update();
+
+	// ★ 追加: 被ダメージフラグを監視
+	auto& gameData = GameData::getInstance();
+	if (gameData.checkPlayerHitFlag())
+	{
+		cpPlayerCharacterView.playDamageBlink();
+	}
+	if (gameData.checkBossHitFlag())
+	{
+		//cpBossCharacterView.playDamageBlink();
+	}
+
 	if (MouseL.down()) {
 		AudioManager::Get().playSE(m_clickSE);
 		clickEffect.spawn(Cursor::PosF());
