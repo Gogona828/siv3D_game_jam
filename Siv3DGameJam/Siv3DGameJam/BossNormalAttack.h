@@ -1,16 +1,23 @@
 ﻿#pragma once
 #include "ISkill.h"
-using namespace s3d;
 
 class BossNormalAttack : public ISkill
 {
-	String name() const override
+public:
+	s3d::String getName() const override
 	{
 		return U"BossNormalAttack.atk";
 
 	}
-	void execute() override;
+	void execute(const SkillContext& context) const override;
+
+	bool hasPriority() const override { return false; }
+
+	int32 getMPCost() const override { return 0; }//
+
+	s3d::String getDescription() const override { return (U"ボス通常攻撃"); }
+	SkillType getSkillType() const override { return SkillType::Attack; }
 
 private:
-	void action();
+	void action() const;
 };

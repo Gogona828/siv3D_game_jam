@@ -10,7 +10,9 @@
 # include "BehaviorInfoView.h"
 # include "BossCharacterView.h"
 #include "ClickEffect.h"
-# include "Sequence.h"
+#include "Sequence.h"
+# include "SkillEffect.h"
+# include "BossSkillManager.h"
 
 enum class BattleState
 {
@@ -36,9 +38,12 @@ private:
 	const Font font{ FontMethod::MSDF, 48 };
 
 	DropZone cpDropZone;
-	PlayerCharacterView cpPlayerCharacterView;
 	BehaviorInfoView cpBehaviorInfoView;
 	BossCharacterView cpBossCharacterView;
+
+public:
+	PlayerCharacterView cpPlayerCharacterView;
+private:
 
 	Image glitchImage;
 	Texture glitchTexture;
@@ -65,6 +70,7 @@ private:
 	void Judge();
 
 public:
+	SkillEffect skillEffect;
 	enum class State
 	{
 		WaitingFill,
@@ -77,10 +83,10 @@ public:
 
 	// 4つのスロットに、あとで実行するスキルキーを保持する
 	Array<s3d::String> slotKeys{ U"", U"", U"", U"" };
+	Array<s3d::String> previousSlotKeys{ U"", U"", U"", U"" };
 
 	//explicit BattleScene(DropZone& dz);
 	BattleScene(const InitData& init);
 	void update() override;
 	void draw() const override;
 };
-

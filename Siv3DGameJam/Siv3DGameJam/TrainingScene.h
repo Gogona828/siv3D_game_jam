@@ -90,8 +90,8 @@ private:
 	bool cutinPlaying = false;
 	bool cutinStarted = false;
 	bool cutinWaiting = false;   // カットイン表示だけして待機中
-	float cutinDuration = 0.05; // 例: 0.5秒
-	float waitAfterCutin = 0.0;
+	float cutinDuration = 0.05f; // 例: 0.5秒
+	float waitAfterCutin = 0.0f;
 	double waitTimeAfterCutin = 1.0; // 秒（今は0.5）
 
 	const Font font{ FontMethod::MSDF, 48 };

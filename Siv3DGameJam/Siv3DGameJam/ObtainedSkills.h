@@ -1,21 +1,15 @@
 ﻿#pragma once
-# include "SkillCatalog.h"
+#include "ISkill.h"
+#include <unordered_set>
 
 class ObtainedSkills
 {
 public:
-	bool add(const SkillRow& row) { return rows.emplace(row.key, row).second; }
-	const SkillRow* getKey(const String& key) const {
-		if (!rows.contains(key)) return nullptr;
-		return &rows.at(key);
-	}
-
-	Array<const SkillRow*> allSkill() const {
-		Array<const SkillRow*> out; out.reserve(rows.size());
-		for (auto& [_, v] : rows) out << &v;
-		return out;
-	}
+	bool add(const String& skillName);
+	bool has(const String& skillName) const;
+	const std::unordered_set<String>& getSkillNames() const;
+    void clear();
 
 private:
-	HashTable<String, SkillRow> rows;
+	std::unordered_set<String> m_skillNames;
 };

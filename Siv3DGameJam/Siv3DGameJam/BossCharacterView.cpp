@@ -13,7 +13,7 @@ void BossCharacterView::draw() const
 	{
 		const Transformer2D t1{ Mat3x2::Translate(boss.center()) };
 		auto break_texture = breakTexture.resized(Vec2 {118, 150} / 2).draw(Arg::center(120, -70));
-		font(U"3").draw(TextStyle::Outline(0.5, ColorF{ 0 }), 36, Arg::center(break_texture.rightX(), break_texture.bottomY() - 10));
+		font(Format(gameData.bossInfos().breakValue)).draw(TextStyle::Outline(0.5, ColorF{ 0 }), 36, Arg::center(break_texture.rightX(), break_texture.bottomY() - 10));
 	}
 
 #pragma region Status

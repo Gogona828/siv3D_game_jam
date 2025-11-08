@@ -136,6 +136,18 @@
     <Filter Include="Resource Files\engine\font\min">
       <UniqueIdentifier>{1b103960-f11a-4515-b4f1-f59333ce00d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\BossSkill">
+      <UniqueIdentifier>{998ccb33-9b06-4235-82a5-bb1127e07b5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PlayerSkill">
+      <UniqueIdentifier>{41952211-74c9-4edd-bfce-e963edd022d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\BossSkill">
+      <UniqueIdentifier>{ae2a6116-dcce-42e6-b858-f77251035eac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PlayerSkill">
+      <UniqueIdentifier>{97129769-b50e-40ea-9837-8f46b58c2296}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -211,6 +223,108 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SequenceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterStatusChangeTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UIElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\BruteForce.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\ChecksumSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\CriticalChainSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkills\DeadlockSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\DefragSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkills\DimensionalCompressionSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkills\DivisionByZeroSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\FirewallSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\FIX.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\GarbageCollectionSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\HelloWorldSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\HoneypotSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\InjectionSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\KillSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\LogicalBombSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkills\MagicNumberSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\MFASkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\OverclockSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkills\OverflowSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkills\PhantomReadSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\Raid5Skill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\RainbowAttackSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\RefactoringSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\ReviseSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\RollbackSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\SelfRepairSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\SilverBulletSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\SplitHorizonSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\ZeroDaySkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="Skills\ZeroTrustSkill.cpp">
+      <Filter>Source Files\PlayerSkill</Filter>
+    </ClCompile>
+    <ClCompile Include="BossSkillManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkillFileIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -963,6 +1077,111 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SequenceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterStatusChangeTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UIElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\BruteForce.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\ChecksumSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\CriticalChainSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkills\DeadlockSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\DefragSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkills\DimensionalCompressionSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkills\DivisionByZeroSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\FirewallSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\FIX.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\GarbageCollectionSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\HelloWorldSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\HoneypotSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\InjectionSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\KillSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\LogicalBombSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkills\MagicNumberSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\MFASkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\OverclockSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkills\OverflowSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkills\PhantomReadSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\Raid5Skill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\RainbowAttackSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\RefactoringSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\ReviseSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\RollbackSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\SelfRepairSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\SplitHorizonSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\SilverBulletSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\ZeroDaySkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="Skills\ZeroTrustSkill.h">
+      <Filter>Header Files\PlayerSkill</Filter>
+    </ClInclude>
+    <ClInclude Include="BossSkillManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Buff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkillEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

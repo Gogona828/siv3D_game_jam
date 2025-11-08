@@ -39,7 +39,7 @@ public:
 
 	void setDropBoxTexture(int32 num, String path, String front = U"");
 
-	String getSkillKey(int slot) const;
+	String getSkillKey(size_t slot) const;
 
 private:
 	std::array<Zone, 4> zones;

@@ -1,24 +1,2 @@
-﻿#pragma once
-#include "ISkill.h"
-#include "Sequence.h"
-
-class FIX : public ISkill
-{
-	String name() const override
-	{
-		return U"FIX.atk";
-
-	}
-	void execute() override;
-
-private:
-	void action();
-	void after()
-	{
-		Console << U"safe";
-	}
-	void action2(int num)
-	{
-		Console << num;
-	}
-};
+﻿// This file is deprecated. The new implementation is in Skills/FIX.h
+#pragma once

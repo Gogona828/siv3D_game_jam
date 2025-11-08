@@ -3,8 +3,6 @@
 #include <functional>
 #include <queue>
 #include "SequenceManager.h"
-using namespace std;
-using namespace s3d;
 
 class Sequence : public enable_shared_from_this<Sequence>
 {

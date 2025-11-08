@@ -400,7 +400,7 @@ void TrainingScene::update()
 				}
 				for (auto i : eventIdArray)
 				{
-					SkillGrantService::getInstance().grantByKey(MasterData::getSkillName(i));
+					SkillGrantService::getInstance().grantSkill(MasterData::getSkillName(i));
 				}
 				if (nowEventType == EventType::None)
 				{

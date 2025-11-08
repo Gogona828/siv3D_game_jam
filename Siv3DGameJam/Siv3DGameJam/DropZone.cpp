@@ -99,9 +99,9 @@ bool DropZone::assignSlot(size_t i, const FilePath& path, bool forceOverWrite)
 	return true;
 }
 
-String DropZone::getSkillKey(int slot) const
+String DropZone::getSkillKey(size_t slot) const
 {
-	if (slot < 0 || static_cast<size_t>(slot) >= zones.size()) {
+	if (slot >= zones.size()) {
 		return U"";
 	}
 	const auto& opt = zones[slot].slotPath;
@@ -176,12 +176,12 @@ void DropZone::update()
 			if (isOk)
 			{
 				// 認証
-				setDropBoxTexture(i, playerBoard, playerFront);
+				setDropBoxTexture(static_cast<int32>(i), playerBoard, playerFront);
 				// TODO: スキル生成
-				const String key = getSkillKey(static_cast<int>(i));
+				const String key = getSkillKey(i);
 				if (!key.isEmpty())
 				{
-					SkillContainer::getInstance().registerSkill(key);
+					SkillContainer::getInstance().addObtainedSkill(key);
 				}
 			}
 			else

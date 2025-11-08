@@ -1,9 +1,8 @@
 ﻿#include "BossNormalAttack.h"
 #include "Sequence.h"
 #include "GameData.h"
-using namespace s3d;
 
-void BossNormalAttack::execute()
+void BossNormalAttack::execute(const SkillContext& context) const
 {
 	auto sequence = std::make_shared<Sequence>();
 	sequence->addAction([this]()
@@ -15,8 +14,8 @@ void BossNormalAttack::execute()
 	sequence->startAutoShared();
 }
 
-void BossNormalAttack::action()
+void BossNormalAttack::action() const
 {
-	Console << U"boss attack!!";
+	// Use GameData from the context to apply damage
 	GameData::getInstance().applyPlayerDamage(100);
 }

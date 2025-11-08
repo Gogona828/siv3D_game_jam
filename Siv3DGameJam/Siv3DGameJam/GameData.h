@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
 
+#include "Buff.h"
+
 struct PlayerCharacterInfo
 {
 	int32 pcTextureId = 0;
@@ -9,6 +11,12 @@ struct PlayerCharacterInfo
 	int32 serviceability = 0;
 	int32 integrity = 0;
 	int32 security = 0;
+	int32 breakValue = 3;
+	bool isBroken = false;
+	int32 mp = 0;
+	int32 maxMp = 0;
+	Array<Buff> buffs;
+	bool cancelPlayerNextAction = false;
 };
 enum class StatusId
 {
@@ -36,7 +44,10 @@ struct BossCharacterInfo
 {
 	int32 hp = 1234567;
 	int32 maxHp = 1234567;
-	int32 breakValue = 3;
+	int32 breakValue = 5;
+	int32 maxBreakValue = 5;
+	bool isBroken = false;
+	int32 attack = 1000;
 };
 
 struct ResultInfo
@@ -94,6 +105,10 @@ public:
 		characterStatus.Overload = 0;
 
 		eventList.clear();
+
+		// ブレーク状態のリセット
+		pcInfo.isBroken = false;
+		bossInfo.isBroken = false;
 	}
 
 	// ★★★ ここから追加 ★★★
@@ -161,6 +176,53 @@ public:
 		bossInfo.hp = Min(bossInfo.maxHp, bossInfo.hp + amount);
 	}
 
+	/**
+	 * @brief プレイヤーにブレークダメージを与えます
+	 */
+	void applyPlayerBreakDamage(int amount)
+	{
+		if (pcInfo.isBroken) return;
+
+		pcInfo.breakValue -= amount;
+		if (pcInfo.breakValue <= 0)
+		{
+			pcInfo.breakValue = 0;
+			pcInfo.isBroken = true;
+
+			// 保守性に応じてダメージを計算 (-100で最大, 100で最小)
+			const int32 maxBreakDamage = 3000;
+			const int32 minBreakDamage = 500;
+			const int32 breakDamage = Remap(characterStatus.Serviceability, maxBreakDamage, minBreakDamage, true);
+
+			applyPlayerDamage(breakDamage);
+		}
+	}
+
+	/**
+	 * @brief ボスにブレークダメージを与えます
+	 */
+	void applyBossBreakDamage(int amount)
+	{
+		if (bossInfo.isBroken) return;
+
+		bossInfo.breakValue -= amount;
+		if (bossInfo.breakValue <= 0)
+		{
+			bossInfo.breakValue = 0;
+			bossInfo.isBroken = true;
+		}
+	}
+
+	/**
+	 * @brief ターン終了時にブレーク状態をリセットします
+	 */
+	void resetBreakStatus()
+	{
+		pcInfo.isBroken = false;
+		bossInfo.isBroken = false;
+		bossInfo.breakValue = bossInfo.maxBreakValue;
+	}
+
 	// ★★★ ここまで追加 ★★★
 
 	const PlayerCharacterInfo& infos() const noexcept { return pcInfo; }
@@ -181,11 +243,13 @@ public:
 
 	void rebuildPlayerInfo()
 	{
-		pcInfo.reliability = Remap(characterStatus.Reliability, m_playerMaxHp, m_playerMaxHp);
-		pcInfo.availability = Remap(characterStatus.Availability, 0, 20);
+		pcInfo.reliability = Remap(characterStatus.Reliability, m_playerMinHp, m_playerMaxHp, true);
+		pcInfo.availability = Remap(characterStatus.Availability, 0, 20, true);
 		pcInfo.serviceability = Remap(characterStatus.Serviceability, 0, 2000);
 		pcInfo.integrity = Remap(characterStatus.Integrity, 0, 10000);
 		pcInfo.security = Remap(characterStatus.Security, 0, 100);
+		pcInfo.maxMp = 10;
+		pcInfo.mp = pcInfo.maxMp;
 	}
 
 	// ★ 追加: BattleSceneがフラグを確認・リセットするための関数
@@ -219,4 +283,10 @@ private:
 	// ★ 追加: 点滅アニメーション用フラグ
 	bool m_playerJustHit = false;
 	bool m_bossJustHit = false;
+
+	int m_phantomReadSkillUseCount = 0;
+
+public:
+	int getPhantomReadSkillUseCount() const { return m_phantomReadSkillUseCount; }
+	void incrementPhantomReadSkillUseCount() { m_phantomReadSkillUseCount++; }
 };

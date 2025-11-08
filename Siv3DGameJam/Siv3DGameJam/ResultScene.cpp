@@ -1,4 +1,6 @@
 ﻿#include "ResultScene.h"
+#include "GameData.h"
+#include "MasterData.h"
 
 using namespace s3d;
 
@@ -61,6 +63,8 @@ void ResultScene::update()
 		double now = Scene::Time();
 		if (lastClickTime > 0 && (now - lastClickTime) <= 0.3)
 		{
+			// ゲームデータをリセット
+			GameData::getInstance().reset();
 			changeScene(U"Title", 1.0s);
 			lastClickTime = -1.0;
 		}
@@ -123,15 +127,29 @@ void ResultScene::draw() const
 		RectF blockRect(45 + xOffset, 130, 380, 300);
 		drawBlock(a, blockRect);
 
-		Texture stand(U"character.png");
-		if (stand)
+		// GameDataからキャラクター情報を取得
+		const auto& gameData = GameData::getInstance();
+		const auto& status = gameData.characterStatus;
+		const auto texturePath = MasterData::getInstance().getTexturePath(static_cast<int>(gameData.evolutedCharacterTextureId));
+		const Texture characterTexture(texturePath);
+
+		if (characterTexture)
 		{
-			double maskY = stand.height() * 0.5;
-			stand.draw(60 + xOffset, 160, ColorF(1.0, a));
-			RectF(60.f, 160.f + static_cast<float>(maskY),
-				  static_cast<float>(stand.width()), static_cast<float>(maskY))
-				.draw(ColorF(0, 0, 0, 0.5 * a));
+			characterTexture.scaled(0.3).drawAt(blockRect.center() + Vec2{0, -30}, ColorF(1.0, a));
 		}
+
+		// ステータス表示
+		const Vec2 statusBasePos = blockRect.tl() + Vec2{ 20, 20 };
+		m_labelFont(U"信頼性: {}"_fmt(status.Reliability)).draw(statusBasePos.movedBy(0, 0), ColorF(1.0, a));
+		m_labelFont(U"可用性: {}"_fmt(status.Availability)).draw(statusBasePos.movedBy(0, 30), ColorF(1.0, a));
+		m_labelFont(U"保守性: {}"_fmt(status.Serviceability)).draw(statusBasePos.movedBy(0, 60), ColorF(1.0, a));
+		m_labelFont(U"保全性: {}"_fmt(status.Integrity)).draw(statusBasePos.movedBy(0, 90), ColorF(1.0, a));
+		m_labelFont(U"安全性: {}"_fmt(status.Security)).draw(statusBasePos.movedBy(0, 120), ColorF(1.0, a));
+
+		// Overload
+		RectF(blockRect.tl() + Vec2{15, 250}, 350, 30).draw(ColorF(0.1, a));
+		RectF(blockRect.tl() + Vec2{15, 250}, 350 * (status.Overload / 100.0), 30).draw(Palette::Red);
+		m_labelFont(U"Overload: {}%"_fmt(status.Overload)).drawAt(blockRect.center().x, blockRect.tl().y + 265, ColorF(1.0, a));
 	}
 
 	// 4. 戦闘結果

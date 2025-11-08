@@ -8,6 +8,7 @@
 # include "SkillContainer.h"
 # include "FIX.h"
 # include "Sequence.h"
+# include "BossSkillManager.h"
 # include <Siv3D.hpp>
 
 using namespace s3d;
@@ -19,6 +20,8 @@ BattleScene::BattleScene(const InitData& init) : IScene(init)
 
 	// BGM再生（AudioManager 経由）
 	AudioManager::Get().playBGM(m_bgMusic);
+
+	BossSkillManager::getInstance().loadBossSkills(U"BossSkill.csv");
 
 	cpDropZone.configZone(0, { U"atk", U"def", U"heal", U"buff", U"boss"});
 	cpDropZone.configZone(1, { U"atk", U"def", U"heal", U"buff", U"boss" });
@@ -57,6 +60,7 @@ void BattleScene::update()
 		clickEffect.spawn(Cursor::PosF());
 	}
 	clickEffect.update();
+	skillEffect.update();
 
 	cpDropZone.update();
 
@@ -86,7 +90,7 @@ void BattleScene::update()
 				// Init処理、あるなら
 				// デバッグ用
 				SkillGrantService::getInstance().resetSkillFolder();
-				SkillGrantService::getInstance().grantByKey(U"FIX.atk");
+				SkillGrantService::getInstance().grantSkill(U"FIX.atk");
 				currentBattleState = BattleState::BoxReset;
 				continue;
 
@@ -104,12 +108,37 @@ void BattleScene::update()
 
 			case BattleState::EnemyActArrangement:
 				{
-					int n = Random(0, 5);
-					for (int i = 0; i < 2; i++)
+					// ボスがブレーク状態なら行動不能
+					if (GameData::getInstance().bossInfos().isBroken)
 					{
-						cpDropZone.setDropBoxTexture(BossActionPattern[n][i], bossBackPath, bossFrontPath);
-						// 行動の登録
-						cpDropZone.assignSlot(BossActionPattern[n][i], U"BossNormalAttack.atk", false);
+						// 何もしない
+						Console << U"ボスはブレークしている！";
+					}
+					else
+					{
+						auto& bossInfo = GameData::getInstance().bossInfos();
+						double hpPercent = static_cast<double>(bossInfo.hp) / bossInfo.maxHp * 100.0;
+
+						Array<String> availableSkills = BossSkillManager::getInstance().getAvailableSkills(hpPercent);
+						
+						String selectedSkillKey = U"BossNormalAttack.atk"; // デフォルトの攻撃
+						if (turnCount > 0 && turnCount % 15 == 0)
+						{
+							// TODO: カーネルパニックのスキルキーを正しく設定する
+							selectedSkillKey = U"KernelPanic.boss"; // 仮のキー
+						}
+						else if (not availableSkills.isEmpty())
+						{
+							selectedSkillKey = availableSkills.choice();
+						}
+
+						int n = Random(0, 5);
+						for (int i = 0; i < 2; i++)
+						{
+							const int slotIndex = BossActionPattern[n][i];
+							cpDropZone.setDropBoxTexture(slotIndex, bossBackPath, bossFrontPath);
+							slotKeys[slotIndex] = selectedSkillKey;
+						}
 					}
 				}
 
@@ -121,7 +150,9 @@ void BattleScene::update()
 				{
 					currentBattleState = BattleState::SequentialProcess;
 					
-					// DropBoxの左から順に処理
+					Array<std::pair<String, int>> prioritySkills;
+					Array<std::pair<String, int>> normalSkills;
+
 					for (int slot = 0; slot < 4; ++slot)
 					{
 						String key = slotKeys[slot];
@@ -129,44 +160,69 @@ void BattleScene::update()
 						{
 							key = cpDropZone.getSkillKey(slot);
 						}
-						if (key.isEmpty())
-						{
-							continue;
-						}
+						                        if (key.isEmpty())
+						                        {
+						                            continue;
+						                        }
 						
-						sequence.addAction([key]()
-						{
-							//SkillContainer::getInstance().registerSkill(key);
-							if (key.starts_with(U"Boss")) // ボスのスキルか？ Bossで始まっているかで判定している
+						                        if (const ISkill* skill = SkillContainer::getInstance().getSkill(key))
+						                        {
+							if (skill->hasPriority())
 							{
-								// ボススキルは createKnown で生成
-								if (auto sk = SkillContainer::getInstance().createKnown(key))
+								prioritySkills.push_back({key, slot});
+							}
+							else
+							{
+								normalSkills.push_back({key, slot});
+							}
+						}
+					}
+
+					auto addSkillToAction = [this](const String& key, int slot)
+					{
+						sequence.addAction([this, key, slot]()
+						{
+							if (const ISkill* skill = SkillContainer::getInstance().getSkill(key))
+							{
+								auto& playerInfo = GameData::getInstance().infos();
+
+								// Boss skills don't have MP cost
+								if (key.includes(U".boss") || key.starts_with(U"Boss"))
 								{
-									sk->execute();
+									SkillContext context{ GameData::getInstance(), *this, slot };
+									skill->execute(context);
+								}
+								else if (playerInfo.mp >= skill->getMPCost())
+								{
+									playerInfo.mp -= skill->getMPCost();
+
+									cpPlayerCharacterView.playAttackAnimation();
+
+									SkillContext context{ GameData::getInstance(), *this, slot };
+									skill->execute(context);
 								}
 								else
 								{
-									// tableにも存在しない（タイプミスなど）
-									Console << U"[Skill] Master list (Known) not found: " << key;
+									// Not enough MP, maybe play a sound or show a message
+									Console << U"Not enough MP for skill: " << key;
 								}
 							}
-							else // プレイヤースキル
+							else
 							{
-								// プレイヤースキルは createRegistered で生成
-								if (auto sk = SkillContainer::getInstance().createRegistered(key))
-								{
-									sk->execute();
-								}
-								else
-								{
-									// プレイヤーが習得していない
-									Console << U"[Skill] Player skill (Registered) not found: " << key;
-								}
+								Console << U"[Skill] Skill not found or not available: " << key;
 							}
 						});
-
-						// 上記の処理が終わるまで待機
 						sequence.addWaitForAllSequencesArmed();
+					};
+
+					for (const auto& skillInfo : prioritySkills)
+					{
+						addSkillToAction(skillInfo.first, skillInfo.second);
+					}
+
+					for (const auto& skillInfo : normalSkills)
+					{
+						addSkillToAction(skillInfo.first, skillInfo.second);
 					}
 					
 					// 4つ目の待機が終わったらターン終了へ
@@ -191,6 +247,31 @@ void BattleScene::update()
 
 void BattleScene::Judge()
 {
+	// Decrement buff durations
+	auto& playerInfo = GameData::getInstance().infos();
+	for (auto it = playerInfo.buffs.begin(); it != playerInfo.buffs.end(); )
+	{
+		it->duration--;
+		if (it->duration <= 0)
+		{
+			it = playerInfo.buffs.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	// Store current slot keys for Rollback
+	previousSlotKeys = slotKeys;
+
+	// Handle player action cancellation
+	if (GameData::getInstance().infos().cancelPlayerNextAction)
+	{
+		slotKeys.assign(4, U""); // Clear player's slots
+		GameData::getInstance().infos().cancelPlayerNextAction = false; // Reset flag
+	}
+
 	// ★ 修正: 勝敗判定ロジックを追加
 
 		// (GameData にHPを取得する関数が実装されていると仮定)
@@ -205,6 +286,9 @@ void BattleScene::Judge()
 	else
 	{
 		// どちらのHPも残っていれば、次のターンへ
+		// ★ブレーク状態をリセット
+		GameData::getInstance().resetBreakStatus();
+
 		currentBattleState = BattleState::BoxReset;
 	}
 
@@ -258,4 +342,5 @@ void BattleScene::draw() const
 	cpBehaviorInfoView.draw();
 
 	clickEffect.draw();    // クリックエフェクト描画
+	skillEffect.draw();
 }

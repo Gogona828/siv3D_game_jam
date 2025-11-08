@@ -1,72 +1,35 @@
-﻿#include "SkillContainer.h"
-// スキルのヘッダー追加
-#include "FIX.h"
-#include "BruteForce.h"
-// ボス行動
-#include "BossNormalAttack.h"
-
-using namespace s3d;
+﻿#include "stdafx.h"
+#include "SkillContainer.h"
 
 SkillContainer& SkillContainer::getInstance() {
-	static SkillContainer instance;
-	return instance;
+    static SkillContainer instance;
+    return instance;
 }
 
-const SkillContainer::Entry* SkillContainer::table(size_t& outSize) {
-	static const Entry t[] = {
-		// このフォーマットでスキルを足していく
-		{ U"FIX.atk",   &SkillContainer::Make<FIX>  },
-		{ U"BruteForce.atk",   &SkillContainer::Make<BruteForce>  },
-		// ボス用コマンド
-		{ U"BossNormalAttack.atk",   &SkillContainer::Make<BossNormalAttack>  },
-	};
-	outSize = std::size(t);
-	return t;
+void SkillContainer::configure(SkillCatalog* catalog, ObtainedSkills* obtained) {
+    m_catalog = catalog;
+    m_obtained = obtained;
 }
 
-SkillContainer::CreatorFn SkillContainer::findCreator(const String& key) {
-	size_t n = 0; const Entry* t = table(n);
-	for (size_t i = 0; i < n; ++i) {
-		if (key == t[i].key) return t[i].make;
-	}
-	return nullptr;
+const ISkill* SkillContainer::getSkill(const String& skillName) const {
+    if (m_catalog && isSkillAvailable(skillName)) {
+        return m_catalog->find(skillName);
+    }
+    // Also check for boss skills, which are not in ObtainedSkills
+    if (m_catalog && skillName.starts_with(U"Boss"))
+    {
+		return m_catalog->find(skillName);
+    }
+    return nullptr;
 }
 
-bool SkillContainer::registerSkill(const String& key) {
-	if (!findCreator(key)) return false;
-	m_registered.emplace(key);
-	return true;
+bool SkillContainer::isSkillAvailable(const String& skillName) const {
+    return m_obtained && m_obtained->has(skillName);
 }
 
-bool SkillContainer::unregisterSkill(const String& key) {
-	return (m_registered.erase(key) > 0);
-}
-
-bool SkillContainer::isRegistered(const String& key) const {
-	return m_registered.contains(key);
-}
-
-std::unique_ptr<ISkill> SkillContainer::createRegistered(const String& key) const {
-	if (!m_registered.contains(key)) return nullptr;
-	if (auto make = findCreator(key)) return make();
-	return nullptr;
-}
-
-std::unique_ptr<ISkill> SkillContainer::createKnown(const String& key) const {
-	if (auto make = findCreator(key)) return make();
-	return nullptr;
-}
-
-Array<String> SkillContainer::knownKeys() const {
-	size_t n = 0; const Entry* t = table(n);
-	Array<String> out; out.reserve(n);
-	for (size_t i = 0; i < n; ++i) out << String{ t[i].key };
-	out.sort();
-	return out;
-}
-
-Array<String> SkillContainer::registeredKeys() const {
-	Array<String> out(m_registered.begin(), m_registered.end());
-	out.sort();
-	return out;
+bool SkillContainer::addObtainedSkill(const String& skillName) {
+    if (m_obtained) {
+        return m_obtained->add(skillName);
+    }
+    return false;
 }

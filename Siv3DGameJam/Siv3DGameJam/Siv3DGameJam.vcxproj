@@ -75,6 +75,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <BuildStlModules>false</BuildStlModules>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -102,6 +103,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <BuildStlModules>false</BuildStlModules>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -121,6 +123,13 @@
     <ClCompile Include="BehaviorInfoView.cpp" />
     <ClCompile Include="BossNormalAttack.cpp" />
     <ClCompile Include="BossCharacterView.cpp" />
+    <ClCompile Include="BossSkillManager.cpp" />
+    <ClCompile Include="BossSkills\DeadlockSkill.cpp" />
+    <ClCompile Include="BossSkills\DimensionalCompressionSkill.cpp" />
+    <ClCompile Include="BossSkills\DivisionByZeroSkill.cpp" />
+    <ClCompile Include="BossSkills\MagicNumberSkill.cpp" />
+    <ClCompile Include="BossSkills\OverflowSkill.cpp" />
+    <ClCompile Include="BossSkills\PhantomReadSkill.cpp" />
     <ClCompile Include="BruteForce.cpp" />
     <ClCompile Include="CharacterStatusChangeTable.cpp" />
     <ClCompile Include="DropZone.cpp" />
@@ -137,7 +146,32 @@
     <ClCompile Include="SequenceManager.cpp" />
     <ClCompile Include="SkillCatalog.cpp" />
     <ClCompile Include="SkillContainer.cpp" />
+    <ClCompile Include="SkillFileIO.cpp" />
     <ClCompile Include="SkillGrantService.cpp" />
+    <ClCompile Include="Skills\BruteForce.cpp" />
+    <ClCompile Include="Skills\ChecksumSkill.cpp" />
+    <ClCompile Include="Skills\CriticalChainSkill.cpp" />
+    <ClCompile Include="Skills\DefragSkill.cpp" />
+    <ClCompile Include="Skills\FirewallSkill.cpp" />
+    <ClCompile Include="Skills\FIX.cpp" />
+    <ClCompile Include="Skills\GarbageCollectionSkill.cpp" />
+    <ClCompile Include="Skills\HelloWorldSkill.cpp" />
+    <ClCompile Include="Skills\HoneypotSkill.cpp" />
+    <ClCompile Include="Skills\InjectionSkill.cpp" />
+    <ClCompile Include="Skills\KillSkill.cpp" />
+    <ClCompile Include="Skills\LogicalBombSkill.cpp" />
+    <ClCompile Include="Skills\MFASkill.cpp" />
+    <ClCompile Include="Skills\OverclockSkill.cpp" />
+    <ClCompile Include="Skills\Raid5Skill.cpp" />
+    <ClCompile Include="Skills\RainbowAttackSkill.cpp" />
+    <ClCompile Include="Skills\RefactoringSkill.cpp" />
+    <ClCompile Include="Skills\ReviseSkill.cpp" />
+    <ClCompile Include="Skills\RollbackSkill.cpp" />
+    <ClCompile Include="Skills\SelfRepairSkill.cpp" />
+    <ClCompile Include="Skills\SilverBulletSkill.cpp" />
+    <ClCompile Include="Skills\SplitHorizonSkill.cpp" />
+    <ClCompile Include="Skills\ZeroDaySkill.cpp" />
+    <ClCompile Include="Skills\ZeroTrustSkill.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -354,7 +388,15 @@
     <ClInclude Include="BehaviorInfoView.h" />
     <ClInclude Include="BossNormalAttack.h" />
     <ClInclude Include="BossCharacterView.h" />
+    <ClInclude Include="BossSkillManager.h" />
+    <ClInclude Include="BossSkills\DeadlockSkill.h" />
+    <ClInclude Include="BossSkills\DimensionalCompressionSkill.h" />
+    <ClInclude Include="BossSkills\DivisionByZeroSkill.h" />
+    <ClInclude Include="BossSkills\MagicNumberSkill.h" />
+    <ClInclude Include="BossSkills\OverflowSkill.h" />
+    <ClInclude Include="BossSkills\PhantomReadSkill.h" />
     <ClInclude Include="BruteForce.h" />
+    <ClInclude Include="Buff.h" />
     <ClInclude Include="CharacterStatusChangeTable.h" />
     <ClInclude Include="DropZone.h" />
     <ClInclude Include="FIX.h" />
@@ -373,9 +415,34 @@
     <ClInclude Include="SequenceManager.h" />
     <ClInclude Include="SkillCatalog.h" />
     <ClInclude Include="SkillContainer.h" />
+    <ClInclude Include="SkillEffect.h" />
     <ClInclude Include="SkillEnums.h" />
     <ClInclude Include="SkillFileIO.h" />
     <ClInclude Include="SkillGrantService.h" />
+    <ClInclude Include="Skills\BruteForce.h" />
+    <ClInclude Include="Skills\ChecksumSkill.h" />
+    <ClInclude Include="Skills\CriticalChainSkill.h" />
+    <ClInclude Include="Skills\DefragSkill.h" />
+    <ClInclude Include="Skills\FirewallSkill.h" />
+    <ClInclude Include="Skills\FIX.h" />
+    <ClInclude Include="Skills\GarbageCollectionSkill.h" />
+    <ClInclude Include="Skills\HelloWorldSkill.h" />
+    <ClInclude Include="Skills\HoneypotSkill.h" />
+    <ClInclude Include="Skills\InjectionSkill.h" />
+    <ClInclude Include="Skills\KillSkill.h" />
+    <ClInclude Include="Skills\LogicalBombSkill.h" />
+    <ClInclude Include="Skills\MFASkill.h" />
+    <ClInclude Include="Skills\OverclockSkill.h" />
+    <ClInclude Include="Skills\Raid5Skill.h" />
+    <ClInclude Include="Skills\RainbowAttackSkill.h" />
+    <ClInclude Include="Skills\RefactoringSkill.h" />
+    <ClInclude Include="Skills\ReviseSkill.h" />
+    <ClInclude Include="Skills\RollbackSkill.h" />
+    <ClInclude Include="Skills\SelfRepairSkill.h" />
+    <ClInclude Include="Skills\SilverBulletSkill.h" />
+    <ClInclude Include="Skills\SplitHorizonSkill.h" />
+    <ClInclude Include="Skills\ZeroDaySkill.h" />
+    <ClInclude Include="Skills\ZeroTrustSkill.h" />
     <ClInclude Include="StatAlias.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TitleScene.h" />

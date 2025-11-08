@@ -18,6 +18,7 @@ class ResultScene; // ← 追加！
 # include "SkillGrantService.h"
 # include "SkillCatalog.h"
 # include "ObtainedSkills.h"
+# include "SkillContainer.h"
 
 
 void Main()
@@ -38,10 +39,11 @@ void Main()
 	app.init(U"Title");
 
 	static SkillCatalog catalog;
-	catalog.loadCSV(U"assets/data/AllSkillData.csv");
+	catalog.load();
 	static ObtainedSkills obtained;
 	SkillGrantService& skillAPI = SkillGrantService::getInstance();
 	skillAPI.configure(&catalog, &obtained);
+	SkillContainer::getInstance().configure(&catalog, &obtained);
 
 	const Font font{ FontMethod::MSDF, 48 };
 
